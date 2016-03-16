@@ -38,23 +38,36 @@ class SimpleTemplateIllustrator(object):
     def __init__(self, template_name='simple.pov.jinja2'):
         self.template_name = template_name
 
-        self.wallx = list()
-        self.wally = list()
+        self.parts = list()
 
     def draw_wallx(self, x, y, z=0):
-        self.wallx.append((x, y, z))
+        self.parts.append(('MakeWallX', (x, y, z)))
 
     def draw_wally(self, x, y, z=0):
-        self.wally.append((x, y, z))
+        self.parts.append(('MakeWallY', (x, y, z)))
+
+    def draw_archx(self, x, y, z=0):
+        self.parts.append(('MakeArchX', (x, y, z)))
+
+    def draw_archy(self, x, y, z=0):
+        self.parts.append(('MakeArchY', (x, y, z)))
+
+    def draw_openx(self, x, y, z=0):
+        self.parts.append(('MakeOpenX', (x, y, z)))
+
+    def draw_openy(self, x, y, z=0):
+        self.parts.append(('MakeOpenY', (x, y, z)))
+
+    def draw_blockx(self, x, y, z=0):
+        self.parts.append(('MakeBlockX', (x, y, z)))
+
+    def draw_blocky(self, x, y, z=0):
+        self.parts.append(('MakeBlockY', (x, y, z)))
 
     def make(self):
         parts = list()
         parts.append(resource('simple.pov.txt'))
-        for wall in self.wallx:
-            parts.append('MakeWallX({}, {}, {})'.format(*wall))
-        for wall in self.wally:
-            parts.append('MakeWallY({}, {}, {})'.format(*wall))
+        for cmd, pos in self.parts:
+            parts.append('{0}({1[0]}, {1[1]}, {1[2]})'.format(cmd, pos))
         return '\n'.join(parts)
-        #return template(self.template_name, wallx=self.wallx, wally=self.wally)
-
 

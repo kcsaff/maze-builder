@@ -1,4 +1,4 @@
-from castles.castle import CastleOneLevel
+from castles.castle import CastleOneLevel, CastleTwoLevel
 from castles.illustrators import SimpleSurfaceIllustrator, SimpleTemplateIllustrator
 from castles.faces import Surface
 from castles.obj import write_obj
@@ -6,7 +6,7 @@ import time
 
 
 
-castle = CastleOneLevel(200, 200)
+castle = CastleTwoLevel(200, 200)
 
 
 # illustrator = SimpleSurfaceIllustrator(Surface.box(1.2, 0.2, 0.5).translate((-0.1, -0.1, 0)))
