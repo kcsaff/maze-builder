@@ -4,8 +4,6 @@ from castles.faces import Surface
 from castles.obj import write_obj
 import time
 
-
-
 castle = CastleTwoLevel(100, 100)
 
 

@@ -65,5 +65,8 @@ class SimpleTemplateIllustrator(object):
     def draw_blocky(self, x, y, z=0):
         self.parts.append(('MakeBlockY', (x, y, z)))
 
+    def draw_feature(self, x, y, z=0):
+        self.parts.append(('MakeFeature', (x, y, z)))
+
     def make(self):
         return template(self.template_name, parts=self.parts)
