@@ -6,7 +6,7 @@ import time
 
 
 
-castle = CastleTwoLevel(200, 200)
+castle = CastleTwoLevel(100, 100)
 
 
 # illustrator = SimpleSurfaceIllustrator(Surface.box(1.2, 0.2, 0.5).translate((-0.1, -0.1, 0)))

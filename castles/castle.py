@@ -12,8 +12,9 @@ class CastleTwoLevel(object):
             return self.x, self.y
 
     class Wall(object):
-        def __init__(self, dim, lower_rooms, upper_rooms):
+        def __init__(self, dim, pos, lower_rooms, upper_rooms):
             self.dim = dim
+            self.pos = pos
             # self.lower = Route(lower_rooms, conflicts=[id(self)])
             # self.upper = Route(upper_rooms, conflicts=[id(self)])
             # self.route_sets = [[self.lower], [self.upper], [self.lower, self.upper]]
@@ -23,6 +24,10 @@ class CastleTwoLevel(object):
             self.route_sets = [[self.lower], [self.upper]]
 
         def name(self, topology):
+            # if self.lower in topology:
+            #     return 'open' + self.dim
+            # else:
+            #     return 'wall' + self.dim
             if self.upper in topology:
                 if self.lower in topology:
                     return 'arch' + self.dim
@@ -34,9 +39,6 @@ class CastleTwoLevel(object):
                 else:
                     return 'block' + self.dim
 
-        def pos(self):
-            return self.lower.rooms[0].pos()
-
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.lower_rooms = [[self.Room(0, i, j) for j in range(y)] for i in range(x)]
@@ -47,7 +49,7 @@ class CastleTwoLevel(object):
         # Walls with (lower) varying x
         self.walls.extend(
             self.Wall(
-                'y',
+                'y', (i+1, j),
                 (self.lower_rooms[i][j], self.lower_rooms[i+1][j]),
                 (self.upper_rooms[i+1][j], self.upper_rooms[i+1][j+1]),
             ) for i in range(x-1) for j in range(y)
@@ -55,7 +57,7 @@ class CastleTwoLevel(object):
         # Walls with (lower) varying y
         self.walls.extend(
             self.Wall(
-                'x',
+                'x', (i, j+1),
                 (self.lower_rooms[i][j], self.lower_rooms[i][j+1]),
                 (self.upper_rooms[i][j+1], self.upper_rooms[i+1][j+1]),
             ) for i in range(x) for j in range(y-1)
@@ -71,10 +73,9 @@ class CastleTwoLevel(object):
             self.topology.offer(*route_set)
 
     def draw(self, illustrator):
-        misses = 0
         for wall in self.walls:
             fun = getattr(illustrator, 'draw_' + wall.name(self.topology))
-            fun(wall.pos()[0] - self.x/2, wall.pos()[1] - self.y/2)
+            fun(wall.pos[0] - self.x/2, wall.pos[1] - self.y/2)
 
 
 class CastleOneLevel(object):
