@@ -1,0 +1,23 @@
+#include "colors.inc"
+background { color Black }
+camera {
+    location <100, 100, 100>
+    look_at  <0, 0, 0>
+}
+light_source { <-100, 100, 100> color White}
+
+#macro MakeWallX (X, Y, Z)
+    box { <X-0.1, Z+0, Y-0.1>, <X+1.1, Z+0.5, Y+0.1> pigment { White } }
+#end
+
+#macro MakeWallY (X, Y, Z)
+    box { <X-0.1, Z+0, Y-0.1>, <X+0.1, Z+0.5, Y+1.1> pigment { White } }
+#end
+
+{% for x,y,z in wallx -%}
+MakeWallX({{ x }}, {{ y }}, {{ z }})
+{%- endfor %}
+
+{% for x,y,z in wally -%}
+MakeWallY({{ x }}, {{ y }}, {{ z }})
+{%- endfor %}
