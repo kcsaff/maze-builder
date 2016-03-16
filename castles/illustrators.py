@@ -1,6 +1,7 @@
 from .faces import V, Surface
 import math
 import pkgutil
+import jinja2
 
 
 RESOURCE_PACKAGE = 'castles.resources'
@@ -11,7 +12,7 @@ def resource(resource_name):
 
 
 def template(template_name, **kwargs):
-    jinja2.Template(resource(template_name)).render(**kwargs)
+    return jinja2.Template(resource(template_name)).render(**kwargs)
 
 
 class SimpleSurfaceIllustrator(object):
@@ -65,9 +66,4 @@ class SimpleTemplateIllustrator(object):
         self.parts.append(('MakeBlockY', (x, y, z)))
 
     def make(self):
-        parts = list()
-        parts.append(resource('simple.pov.txt'))
-        for cmd, pos in self.parts:
-            parts.append('{0}({1[0]}, {1[1]}, {1[2]})'.format(cmd, pos))
-        return '\n'.join(parts)
-
+        return template(self.template_name, parts=self.parts)
