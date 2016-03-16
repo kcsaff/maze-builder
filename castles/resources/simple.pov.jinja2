@@ -2,7 +2,7 @@
 background { color Black }
 camera {
     location <10, 10, 10>
-    look_at  <0, 0, 0>
+    look_at  <1, 1, 1>
 }
 light_source { <-30, 200, 140> color White }
 
@@ -28,21 +28,22 @@ plane { y, 0 pigment { White } }
 #declare HEIGHT=1.5;
 #declare FENCE=1.0;
 #declare R1=seed(1);
+#declare WALL=0.1;
 
 #macro MakeWallX (X, Y, Z)
-    box { <X-0.1, Z+0, Y-0.1>, <X+1.1, Z+HEIGHT, Y+0.1> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
 #end
 
 #macro MakeWallY (X, Y, Z)
-    box { <X-0.1, Z+0, Y-0.1>, <X+0.1, Z+HEIGHT, Y+1.1> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
 #end
 
 #macro MakeArchX (X, Y, Z)
-    box { <X-0.1, Z+HEIGHT-0.2, Y-0.1>, <X+1.1, Z+HEIGHT, Y+0.1> pigment { White } }
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
 #end
 
 #macro MakeArchY (X, Y, Z)
-    box { <X-0.1, Z+HEIGHT-0.2, Y-0.1>, <X+0.1, Z+HEIGHT, Y+1.1> pigment { White } }
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
 #end
 
 #macro MakeOpenX (X, Y, Z)
@@ -52,24 +53,24 @@ plane { y, 0 pigment { White } }
 #end
 
 #macro MakeBlockX (X, Y, Z)
-    box { <X-0.10, Z+0, Y-0.10>, <X+0.10, Z+HEIGHT, Y+0.10> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
     box { <X+0.15, Z+0, Y-0.05>, <X+0.25, Z+FENCE, Y+0.05> pigment { White } }
     box { <X+0.35, Z+0, Y-0.05>, <X+0.45, Z+FENCE, Y+0.05> pigment { White } }
     box { <X+0.55, Z+0, Y-0.05>, <X+0.65, Z+FENCE, Y+0.05> pigment { White } }
     box { <X+0.75, Z+0, Y-0.05>, <X+0.85, Z+FENCE, Y+0.05> pigment { White } }
-    box { <X+0.90, Z+0, Y-0.10>, <X+1.10, Z+HEIGHT, Y+0.10> pigment { White } }
+    box { <X+1-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
 #end
 
 #macro MakeBlockY (X, Y, Z)
-    box { <X-0.10, Z+0, Y-0.10>, <X+0.10, Z+HEIGHT, Y+0.10> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
     box { <X-0.05, Z+0, Y+0.15>, <X+0.05, Z+FENCE, Y+0.25> pigment { White } }
     box { <X-0.05, Z+0, Y+0.35>, <X+0.05, Z+FENCE, Y+0.45> pigment { White } }
     box { <X-0.05, Z+0, Y+0.55>, <X+0.05, Z+FENCE, Y+0.65> pigment { White } }
     box { <X-0.05, Z+0, Y+0.75>, <X+0.05, Z+FENCE, Y+0.85> pigment { White } }
-    box { <X-0.10, Z+0, Y+0.90>, <X+0.10, Z+HEIGHT, Y+1.10> pigment { White } }
+    box { <X-WALL, Z+0, Y+1-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
 #end
 
-#macro MakeFeature (X, Y, Z)
+#macro MakeSpire (X, Y, Z)
     box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> pigment { White } }
 
     #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
@@ -93,6 +94,18 @@ plane { y, 0 pigment { White } }
   }
 #end
 
-{% for cmd,coords in parts %}
+#macro MakeCourtyard (X, Y, Z, W, L)
+#end
+
+#macro MakeTower (X, Y, Z, W, L)
+    #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    box { <X-WALL*1.1, 0, Y-WALL*1.1>, <X+W+WALL*1.1, tower, Y+L+WALL*1.1> pigment { White } }
+#end
+
+{% for cmd,coords in parts -%}
 {{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }})
+{% endfor %}
+
+{% for cmd,coords,dims in blocks -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }}, {{ dims[0] }}, {{ dims[1] }})
 {% endfor %}

@@ -40,6 +40,7 @@ class SimpleTemplateIllustrator(object):
         self.template_name = template_name
 
         self.parts = list()
+        self.blocks = list()
 
     def draw_wallx(self, x, y, z=0):
         self.parts.append(('MakeWallX', (x, y, z)))
@@ -65,8 +66,14 @@ class SimpleTemplateIllustrator(object):
     def draw_blocky(self, x, y, z=0):
         self.parts.append(('MakeBlockY', (x, y, z)))
 
-    def draw_feature(self, x, y, z=0):
-        self.parts.append(('MakeFeature', (x, y, z)))
+    def draw_spire(self, x, y, z=0):
+        self.parts.append(('MakeSpire', (x, y, z)))
+
+    def draw_courtyard(self, x, y, width, length):
+        self.blocks.append(('MakeCourtyard', (x, y, 0), (width, length)))
+
+    def draw_tower(self, x, y, width, length):
+        self.blocks.append(('MakeTower', (x, y, 0), (width, length)))
 
     def make(self):
-        return template(self.template_name, parts=self.parts)
+        return template(self.template_name, parts=self.parts, blocks=self.blocks)
