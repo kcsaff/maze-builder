@@ -1,0 +1,217 @@
+#version 3.7
+#include "colors.inc"
+#include "textures.inc"
+#include "stones2.inc"
+background { color Black }
+camera {
+    right x*image_width/image_height // Square pixels
+    location <10, 10, 10>
+    look_at  <1, 1, 1>
+}
+
+#declare HEIGHT=1.5;
+#declare DEPTH=-HEIGHT;
+#declare FENCE=1.0;
+#declare R1=seed(1);
+#declare WALL=0.1;
+#declare HALL=1-2*WALL;
+#declare STAIRCOUNT = 5;
+#declare FLOOR=WALL;
+#declare RT=seed({{ seed }});
+#declare PowerOfEvil = rand(RT);
+#declare PowerOfGood = rand(RT) * (1 - PowerOfEvil);
+
+#if (rand(RT) < 0.15)
+    #declare EvilOverwhelmed=1;
+    #undef PowerOfEvil;
+    #declare PowerOfEvil=0;
+#end
+
+light_source {
+    <400, 200*rand(RT), 0>
+    color PowerOfGood
+    rotate <0, 360*rand(RT), 0>
+}
+
+global_settings {
+    assumed_gamma 1.0
+    radiosity {
+      pretrace_start 0.08
+      pretrace_end   0.01
+      count 150
+      nearest_count 10
+      error_bound 0.5
+      recursion_limit 3
+      low_error_factor 0.5
+      gray_threshold 0.0
+      minimum_reuse 0.005
+      maximum_reuse 0.2
+      brightness 1
+      adc_bailout 0.005
+    }
+  }
+
+
+#declare DefaultTexture=texture {
+    T_Stone31 normal { bumps }
+};
+
+#declare DefaultLava=texture {
+    Water
+    pigment { Red }
+    finish { ambient PowerOfEvil }
+};
+
+#declare Evil=object {
+    sphere {
+        0, 0.5
+    }
+    texture { DefaultLava }
+}
+
+plane { y, -10 texture {DefaultTexture} }
+plane { y, 0 texture { DefaultLava } }
+
+#declare STAIR = union {
+    box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+2*HALL/STAIRCOUNT, 1*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 2*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+3*HALL/STAIRCOUNT, 2*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 3*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+4*HALL/STAIRCOUNT, 3*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 4*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+5*HALL/STAIRCOUNT, 4*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 5*HEIGHT/STAIRCOUNT, +WALL> }
+}
+
+#macro MakeWallX (X, Y, Z)
+    box {
+        <-WALL, DEPTH*rand(R1), -WALL>, <+1+WALL, +HEIGHT, +WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeWallY (X, Y, Z)
+    box {
+        <-WALL, DEPTH*rand(R1), -WALL>, <+WALL, +HEIGHT, +1+WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeArchX (X, Y, Z)
+    box {
+        <-WALL, +HEIGHT-0.2, -WALL>, <+1+WALL, +HEIGHT, +WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeArchY (X, Y, Z)
+    box {
+        <-WALL, +HEIGHT-0.2, -WALL>, <+WALL, +HEIGHT, +1+WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeOpenX (X, Y, Z)
+    box {
+        <-WALL, DEPTH*rand(R1), -WALL>, <+1+WALL, +FLOOR, +WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeOpenY (X, Y, Z)
+    box {
+        <-WALL, DEPTH*rand(R1), -WALL>, <+WALL, +FLOOR, +1+WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+#macro MakeBlockX (X, Y, Z)
+
+#end
+
+#macro MakeBlockY (X, Y, Z)
+
+#end
+
+#macro MakeSpire (X, Y, Z)
+    #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    superellipsoid {
+        <0.25, 0.50>
+        rotate<90, 0, 0>
+        translate <1, 0, 1>
+        scale <0.5, 1, 0.5>
+        scale <1+WALL*2, HEIGHT, 1+WALL*2>
+        translate <-WALL*1, 0, -WALL*1>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+    #if (rand(RT) < 0.5 & PowerOfEvil>0)
+    light_source {
+        0, color rgb <PowerOfEvil*rand(RT)+PowerOfGood*rand(RT), PowerOfGood*rand(RT), PowerOfGood*rand(RT)>
+        fade_distance 5
+        fade_power 2
+        looks_like { Evil }
+        translate <X, Z+spire, Y>
+    }
+    #else
+    object {
+        Evil
+        translate <X, Z+spire, Y>
+    }
+    #end
+
+#end
+
+#macro MakeCourtyard (X, Y, Z, W, L)
+#end
+
+#macro MakeTower (X, Y, Z, W, L)
+    #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    superellipsoid {
+        <0.25, 0.50>
+        rotate<90, 0, 0>
+        translate <1, 0, 1>
+        scale 0.5
+        scale <W+WALL*3, 3*tower, L+WALL*3>
+        translate <-WALL*1.5, 0, -WALL*1.5>
+        translate <X, Z, Y>
+        #if (rand(1) < 0.03 * PowerOfEvil)
+            texture { DefaultLava }
+        #else
+            texture { DefaultTexture }
+        #end
+    }
+    superellipsoid {
+        <0.25, 0.50>
+        rotate<90, 0, 0>
+        scale 0.5
+        scale <W*rand(R1), HEIGHT*3*rand(R1), L*rand(R1)>
+        translate <W*rand(R1), 0, L*rand(R1)>
+        translate <X, Z, Y>
+        #if (rand(1) < 0.03 * PowerOfEvil)
+            texture { DefaultLava }
+        #else
+            texture { DefaultTexture }
+        #end
+    }
+#end
+
+#macro MakeStair (X, Y, Z, W, L)
+    object {
+        STAIR
+        rotate y*degrees(atan2(L, W))
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
+#end
+
+{% for cmd,coords in parts -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }})
+{% endfor %}
+
+{% for cmd,coords,dims in blocks -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }}, {{ dims[0] }}, {{ dims[1] }})
+{% endfor %}

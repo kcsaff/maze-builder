@@ -40,17 +40,17 @@ parser.add_argument(
 parser.add_argument(
     '--pov', '-p', type=str,
     help='Path to POV-Ray executable',
-    default='/Users/kcsaff/Downloads/PovrayCommandLineMacV2/Povray37UnofficialMacCmd'
+    default=None #'/Users/kcsaff/Downloads/PovrayCommandLineMacV2/Povray37UnofficialMacCmd'
 )
 parser.add_argument(
     '--ini', '-i', type=str,
     help='INI file to pass to POV-Ray -- a random choice will be made for comma-separated filenames',
-    default='povray,povray[p720],povray[p1080],povray[iphone4]'
+    default=None #'povray,povray[p720],povray[p1080],povray[iphone4]'
 )
 parser.add_argument(
     '--include-path', '-I', type=str,
     help='POV-Ray include path(s), comma-separated',
-    default='/Users/kcsaff/Downloads/PovrayCommandLineMacV2/include'
+    default=None #'/Users/kcsaff/Downloads/PovrayCommandLineMacV2/include'
 )
 parser.add_argument(
     '--magick', '-M', type=str,
@@ -158,10 +158,11 @@ def main(args=None):
 
     illustrator = SimpleTemplateIllustrator(
         weighted_choice(*zip(*{
-            'fantasy.pov.jinja2': 50,
-            'escher.pov.jinja2':  40,
-            'brick.pov.jinja2':    7,
-            'pure.pov.jinja2':     3,
+            'evil.pov.jinja2':    31,
+            'fantasy.pov.jinja2': 38,
+            'escher.pov.jinja2':  25,
+            'brick.pov.jinja2':    4,
+            'pure.pov.jinja2':     2,
         }.items()))
     )
 

@@ -26,14 +26,16 @@ global_settings {
     }
   }
 
-plane { y, 0 pigment { White } }
-
 #declare HEIGHT=1.5;
 #declare FENCE=1.0;
 #declare R1=seed(1);
 #declare WALL=0.1;
 #declare HALL=1-2*WALL;
 #declare STAIRCOUNT = 5;
+
+#declare DefaultTexture=texture { pigment { White } };
+
+plane { y, 0 texture {DefaultTexture} }
 
 #declare STAIR = union {
     box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
@@ -44,19 +46,35 @@ plane { y, 0 pigment { White } }
 }
 
 #macro MakeWallX (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box {
+        <-WALL, +0, -WALL>, <+1+WALL, +HEIGHT, +WALL>
+        texture { DefaultTexture }
+        translate <X, Z, Y>
+    }
 #end
 
 #macro MakeWallY (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+    box {
+        <-WALL, +0, -WALL>, <+WALL, +HEIGHT, +1+WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
 #end
 
 #macro MakeArchX (X, Y, Z)
-    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box {
+        <-WALL, +HEIGHT-0.2, -WALL>, <+1+WALL, +HEIGHT, +WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
 #end
 
 #macro MakeArchY (X, Y, Z)
-    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+    box {
+        <-WALL, +HEIGHT-0.2, -WALL>, <+WALL, +HEIGHT, +1+WALL>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
 #end
 
 #macro MakeOpenX (X, Y, Z)
@@ -66,32 +84,36 @@ plane { y, 0 pigment { White } }
 #end
 
 #macro MakeBlockX (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
-    box { <X+0.15, Z+0, Y-0.05>, <X+0.25, Z+FENCE, Y+0.05> pigment { White } }
-    box { <X+0.35, Z+0, Y-0.05>, <X+0.45, Z+FENCE, Y+0.05> pigment { White } }
-    box { <X+0.55, Z+0, Y-0.05>, <X+0.65, Z+FENCE, Y+0.05> pigment { White } }
-    box { <X+0.75, Z+0, Y-0.05>, <X+0.85, Z+FENCE, Y+0.05> pigment { White } }
-    box { <X+1-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> texture { DefaultTexture } }
+    box { <X+0.15, Z+0, Y-0.05>, <X+0.25, Z+FENCE, Y+0.05> texture { DefaultTexture } }
+    box { <X+0.35, Z+0, Y-0.05>, <X+0.45, Z+FENCE, Y+0.05> texture { DefaultTexture } }
+    box { <X+0.55, Z+0, Y-0.05>, <X+0.65, Z+FENCE, Y+0.05> texture { DefaultTexture } }
+    box { <X+0.75, Z+0, Y-0.05>, <X+0.85, Z+FENCE, Y+0.05> texture { DefaultTexture } }
+    box { <X+1-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { DefaultTexture } }
 #end
 
 #macro MakeBlockY (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
-    box { <X-0.05, Z+0, Y+0.15>, <X+0.05, Z+FENCE, Y+0.25> pigment { White } }
-    box { <X-0.05, Z+0, Y+0.35>, <X+0.05, Z+FENCE, Y+0.45> pigment { White } }
-    box { <X-0.05, Z+0, Y+0.55>, <X+0.05, Z+FENCE, Y+0.65> pigment { White } }
-    box { <X-0.05, Z+0, Y+0.75>, <X+0.05, Z+FENCE, Y+0.85> pigment { White } }
-    box { <X-WALL, Z+0, Y+1-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> texture { DefaultTexture } }
+    box { <X-0.05, Z+0, Y+0.15>, <X+0.05, Z+FENCE, Y+0.25> texture { DefaultTexture } }
+    box { <X-0.05, Z+0, Y+0.35>, <X+0.05, Z+FENCE, Y+0.45> texture { DefaultTexture } }
+    box { <X-0.05, Z+0, Y+0.55>, <X+0.05, Z+FENCE, Y+0.65> texture { DefaultTexture } }
+    box { <X-0.05, Z+0, Y+0.75>, <X+0.05, Z+FENCE, Y+0.85> texture { DefaultTexture } }
+    box { <X-WALL, Z+0, Y+1-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { DefaultTexture } }
 #end
 
 #macro MakeSpire (X, Y, Z)
-    box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> pigment { White } }
+    box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> texture { DefaultTexture } }
 
     #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
-    box { <X-0.45, Z+HEIGHT, Y-0.45>, <X-0.37, Z+spire, Y-0.37> pigment { White } }
-    box { <X-0.45, Z+HEIGHT, Y+0.37>, <X-0.37, Z+spire, Y+0.45> pigment { White } }
-    box { <X+0.37, Z+HEIGHT, Y+0.37>, <X+0.45, Z+spire, Y+0.45> pigment { White } }
-    box { <X+0.37, Z+HEIGHT, Y-0.45>, <X+0.45, Z+spire, Y-0.37> pigment { White } }
-    box { <X-0.5, Z+spire, Y-0.5>, <X+0.5, Z+spire+0.25, Y+0.5> pigment { White } }
+    union {
+        box { <-0.45, +HEIGHT, -0.45>, <-0.37, +spire, -0.37> texture { DefaultTexture } }
+        box { <-0.45, +HEIGHT, +0.37>, <-0.37, +spire, +0.45> texture { DefaultTexture } }
+        box { <+0.37, +HEIGHT, +0.37>, <+0.45, +spire, +0.45> texture { DefaultTexture } }
+        box { <+0.37, +HEIGHT, -0.45>, <+0.45, +spire, -0.37> texture { DefaultTexture } }
+        box { <-0.5, +spire, -0.5>, <+0.5, +spire+0.25, +0.5> texture { DefaultTexture } }
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
 
     prism {
         conic_sweep
@@ -102,9 +124,10 @@ plane { y, 0 pigment { White } }
         <0.6,0.6>,<-0.6,0.6>,<-0.6,-0.6>,<0.6,-0.6>,<0.6,0.6>
         rotate <180, 0, 0>
         scale <1, HEIGHT, 1>
-        translate <X, spire+0.25+HEIGHT, Y>
-        pigment { White }
-  }
+        translate <0, spire+0.25+HEIGHT, 0>
+        translate <X, Z, Y>
+        texture { DefaultTexture }
+    }
 #end
 
 #macro MakeCourtyard (X, Y, Z, W, L)
@@ -112,7 +135,10 @@ plane { y, 0 pigment { White } }
 
 #macro MakeTower (X, Y, Z, W, L)
     #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
-    box { <X-WALL*1.1, 0, Y-WALL*1.1>, <X+W+WALL*1.1, tower, Y+L+WALL*1.1> pigment { White } }
+    box {
+        <X-WALL*1.1, 0, Y-WALL*1.1>, <X+W+WALL*1.1, tower, Y+L+WALL*1.1>
+        texture {DefaultTexture}
+    }
 #end
 
 #macro MakeStair (X, Y, Z, W, L)
@@ -120,7 +146,7 @@ plane { y, 0 pigment { White } }
         STAIR
         rotate y*degrees(atan2(L, W))
         translate <X, Z, Y>
-        pigment { White }
+        texture { DefaultTexture }
     }
 #end
 

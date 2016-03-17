@@ -19,7 +19,7 @@ camera {
     location <10, 10, 10>
     look_at  <1, 1, 1>
     focal_point <3, 3, 3>
-    aperture 10*rand(RT)
+    aperture 40*rand(RT)
 }
 light_source { <-30, 200, 140> color White }
 
@@ -41,8 +41,49 @@ global_settings {
     }
   }
 
-//#declare DefaultTexture = texture { pigment { White } }
-
+sky_sphere {
+  pigment {
+    gradient y
+      color_map {
+        [ 0.5  color SkyBlue ]
+        [ 1.0  color MidnightBlue ]
+        }
+    scale 2
+    translate -1
+    }
+  emission rgb <0.8,0.8,1>
+  }
+  // declare rainbow's colors
+  #declare r_violet1 = color rgbf<1.0, 0.5, 1.0, 1.0>;
+  #declare r_violet2 = color rgbf<1.0, 0.5, 1.0, 0.8>;
+  #declare r_indigo  = color rgbf<0.5, 0.5, 1.0, 0.8>;
+  #declare r_blue    = color rgbf<0.2, 0.2, 1.0, 0.8>;
+  #declare r_cyan    = color rgbf<0.2, 1.0, 1.0, 0.8>;
+  #declare r_green   = color rgbf<0.2, 1.0, 0.2, 0.8>;
+  #declare r_yellow  = color rgbf<1.0, 1.0, 0.2, 0.8>;
+  #declare r_orange  = color rgbf<1.0, 0.5, 0.2, 0.8>;
+  #declare r_red1    = color rgbf<1.0, 0.2, 0.2, 0.8>;
+  #declare r_red2    = color rgbf<1.0, 0.2, 0.2, 1.0>;
+  // create the rainbow
+  rainbow {
+    angle 42.5
+    width 5
+    distance 1.0e5
+    direction <-0.2, -0.2, 1>
+    jitter 0.01
+    color_map {
+      [0.000  color r_violet1]
+      [0.100  color r_violet2]
+      [0.214  color r_indigo]
+      [0.328  color r_blue]
+      [0.442  color r_cyan]
+      [0.556  color r_green]
+      [0.670  color r_yellow]
+      [0.784  color r_orange]
+      [0.900  color r_red1]
+    }
+    rotate <0, 360*rand(RT), 0>
+  }
 #declare DefaultTexture = texture { T_Stone34 scale 0.15 }
 
 #declare HighlightPigment = pigment { rgb CHSV2RGB(<360*rand(RT), 1.0, 1.0>) }
