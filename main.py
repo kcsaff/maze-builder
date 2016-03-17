@@ -4,7 +4,7 @@ from castles.faces import Surface
 from castles.obj import write_obj
 import time
 
-castle = CastleTwoLevel(50, 50)
+castle = CastleTwoLevel(100, 100)
 
 
 # illustrator = SimpleSurfaceIllustrator(Surface.box(1.2, 0.2, 0.5).translate((-0.1, -0.1, 0)))
@@ -14,7 +14,7 @@ castle = CastleTwoLevel(50, 50)
 #     write_obj(illustrator.make(), f)
 
 
-illustrator = SimpleTemplateIllustrator('escher.pov.jinja2')
+illustrator = SimpleTemplateIllustrator('fantasy.pov.jinja2')
 
 castle.draw(illustrator)
 with open('out.pov', 'w') as f:

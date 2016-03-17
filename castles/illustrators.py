@@ -84,5 +84,5 @@ class SimpleTemplateIllustrator(object):
             self.template_name,
             parts=self.parts,
             blocks=self.blocks,
-            seed=random.randint(1, 255)
+            seed=random.randint(1, 9999)
         )

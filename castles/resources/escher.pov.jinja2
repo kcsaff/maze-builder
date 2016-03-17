@@ -190,8 +190,8 @@ plane { y, 0 pigment { White } }
     #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
     union {
         difference {
-            box { <X-WALL*1.1, Z, Y-WALL*1.1>, <X+W+WALL*1.1, Z+tower, Y+L+WALL*1.1> }
-            box { <X, Z+tower-2*WALL, Y>, <X+W, Z+tower+WALL, Y+L> }
+            box { <-WALL*1.1, 0, -WALL*1.1>, <+W+WALL*1.1, +tower, +L+WALL*1.1> }
+            box { <0, +tower-2*WALL, 0>, <+W, +tower+WALL, +L> }
         }
         superellipsoid {
             <0.05, 0.30>
@@ -199,8 +199,9 @@ plane { y, 0 pigment { White } }
             translate <1, 1, 1>
             scale 0.5
             scale <W-WALL, tower, L-WALL>
-            translate <X+WALL/2, Z+WALL+WALL/2, Y+WALL/2>
+            translate <+WALL/2, +WALL+WALL/2, +WALL/2>
         }
+        translate <X, Z, Y>
         texture { WhiteStucco }
     }
 #end
