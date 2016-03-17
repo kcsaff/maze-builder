@@ -51,7 +51,12 @@ class CastleTwoLevel(object):
                 else:
                     return 'block' + self.dim
 
-    def __init__(self, x, y, spire_density=0.01, courtyard_density=0.012, tower_density=0.007, stair_density=0.10):
+    def __init__(
+            self, x, y,
+            spire_density=0.01, courtyard_density=0.012, tower_density=0.007, stair_density=0.10,
+            verbose=0
+    ):
+        self.verbose = verbose
         self.x, self.y = x, y
         self.lower_rooms = [[self.Room(0, i, j) for j in range(y)] for i in range(x)]
         self.upper_rooms = [[self.Room(1, i, j) for j in range(y+1)] for i in range(x+1)]
@@ -62,6 +67,9 @@ class CastleTwoLevel(object):
         self.courtyards = list()
         self.stairs = list()
         self.topology = Topology()
+
+        if verbose >= 2:
+            print('Generating routes...')
 
         # Walls with (lower) varying x
         self.walls.extend(
@@ -80,17 +88,34 @@ class CastleTwoLevel(object):
             ) for i in range(x) for j in range(y-1)
         )
 
-        for _ in range(int(spire_density*x*y)):
-            self._make_spire()
+        # Make features, from big to small
+
+        if verbose >= 2:
+            print('Generating courtyards...')
 
         for _ in range(int(courtyard_density*x*y)):
             self._make_courtyard(random.randint(2, 5))
 
+        if verbose >= 2:
+            print('Generating towers...')
+
         for _ in range(int(tower_density*x*y)):
             self._make_tower(random.randint(1, 3), random.randint(1, 3))
 
+        if verbose >= 2:
+            print('Generating spires...')
+
+        for _ in range(int(spire_density*x*y)):
+            self._make_spire()
+
+        if verbose >= 2:
+            print('Generating stairs...')
+
         for _ in range(int(stair_density*x*y)):
             self._make_stair()
+
+        if verbose >= 2:
+            print('Filling maze with walls and arches...')
 
         route_sets = list()
         for wall in self.walls:
@@ -109,6 +134,10 @@ class CastleTwoLevel(object):
     def _alloc_feature(self, width, length=None, retries=0, upout=False, margin=0):
         if length is None:
             length = width
+
+        if self.verbose >= 4:
+            print('Allocating {}x{} feature...'.format(width, length))
+
         nupout = 1 if upout else 0
         while retries >= 0:
             x = random.randint(margin, self.x-width-nupout-margin)
@@ -156,6 +185,9 @@ class CastleTwoLevel(object):
 
         self.stairs.append((center[0], center[1], dir[0], dir[1]))
 
+        if self.verbose >= 4:
+            print('Placed {}x{} stair at {}, {}'.format(dims[0], dims[1], pos[0], pos[1]))
+
     def _make_courtyard(self, width, length=None, retries=2):
         pos, lower, upper = self._alloc_feature(width, length, retries)
         if pos is None:
@@ -167,6 +199,9 @@ class CastleTwoLevel(object):
             room.blocked = True
 
         self.courtyards.append((pos[0], pos[1], width, length or width))
+
+        if self.verbose >= 4:
+            print('Placed {}x{} courtyard at {}, {}'.format(width, length or width, pos[0], pos[1]))
 
     def _force_lower_connect(self, lower):
         walls_used = set()
@@ -187,6 +222,9 @@ class CastleTwoLevel(object):
 
         self.towers.append((pos[0], pos[1], width, length or width))
 
+        if self.verbose >= 4:
+            print('Placed {}x{} tower at {}, {}'.format(width, length or width, pos[0], pos[1]))
+
     def _adjacent_rooms(self, rooms):
         for room0, room1 in itertools.combinations(rooms, 2):
             if room0.adjacent(room1):
@@ -206,20 +244,38 @@ class CastleTwoLevel(object):
 
         self.spires.append((pos[0] + 1, pos[1] + 1))
 
+        if self.verbose >= 4:
+            print('Placed {}x{} spire at {}, {}'.format(2, 2, pos[0], pos[1]))
+
     def draw(self, illustrator):
+
+        if self.verbose >= 2:
+            print('Drawing walls...')
 
         for wall in self.walls:
             fun = getattr(illustrator, 'draw_' + wall.name(self.topology))
             fun(wall.pos[0] - self.x/2, wall.pos[1] - self.y/2)
 
+        if self.verbose >= 2:
+            print('Drawing spires...')
+
         for spire in self.spires:
             illustrator.draw_spire(spire[0] - self.x/2, spire[1] - self.y/2)
+
+        if self.verbose >= 2:
+            print('Drawing courtyards...')
 
         for courtyard in self.courtyards:
             illustrator.draw_courtyard(courtyard[0] - self.x/2, courtyard[1] - self.y/2, courtyard[2], courtyard[3])
 
+        if self.verbose >= 2:
+            print('Drawing towers...')
+
         for tower in self.towers:
             illustrator.draw_tower(tower[0] - self.x/2, tower[1] - self.y/2, tower[2], tower[3])
+
+        if self.verbose >= 2:
+            print('Drawing stairs...')
 
         for stair in self.stairs:
             illustrator.draw_stair(stair[0] - self.x/2, stair[1] - self.y/2, stair[2], stair[3])
