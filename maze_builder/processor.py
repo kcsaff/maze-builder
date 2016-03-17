@@ -36,6 +36,9 @@ class Processor(object):
         ]
         if self.args.ini:
             pov_args.append(random.choice(self.args.ini.split(',')).strip())
+        else:
+            # Default size
+            pov_args.extend(['+W1024', '+H768'])
         if self.args.include_path:
             pov_args.extend('+L{}'.format(path.strip()) for path in self.args.include_path.split(','))
         pov_args.extend([

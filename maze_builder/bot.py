@@ -1,4 +1,5 @@
 import tweepy
+from config import read_config
 
 
 CONSUMER_KEY = "CONSUMER_KEY"

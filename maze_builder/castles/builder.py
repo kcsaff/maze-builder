@@ -31,7 +31,6 @@ class CastleBuilder(object):
                     'pure.pov.jinja2':     2,
             })
         self.illustrator = illustrator
-        print ((illustrator, self.illustrator))
 
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
