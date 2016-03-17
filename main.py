@@ -6,6 +6,7 @@ import random
 from castles.faces import Surface
 from castles.obj import write_obj
 import time
+from castles.random2 import weighted_choice
 
 
 clock = time.perf_counter
@@ -55,14 +56,28 @@ started = clock()
 if verbose:
     print('Generating maze...')
 
-castle = CastleTwoLevel(100, 100, verbose=args.verbose)
+castle = CastleTwoLevel(
+    100, 100, verbose=args.verbose,
+    spire_density=0.01*4*random.random()*random.random(),
+    courtyard_density=0.012*4*random.random()*random.random(),
+    tower_density=0.007*4*random.random()*random.random(),
+    stair_density=0.05*4*random.random()*random.random(),
+)
+
 if verbose:
     elapsed = clock() - started
     print('Maze generated in {0:.3f}s'.format(elapsed))
 
 # Write maze
 
-illustrator = SimpleTemplateIllustrator('escher.pov.jinja2')
+illustrator = SimpleTemplateIllustrator(
+    weighted_choice(*zip(*{
+        'fantasy.pov.jinja2': 50,
+        'escher.pov.jinja2':  40,
+        'brick.pov.jinja2':    7,
+        'pure.pov.jinja2':     3,
+    }.items()))
+)
 
 started = clock()
 if verbose:

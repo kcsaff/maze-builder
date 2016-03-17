@@ -1,6 +1,7 @@
 #include "colors.inc"
 background { color Black }
 camera {
+    right x*image_width/image_height // Square pixels
     location <10, 10, 10>
     look_at  <1, 1, 1>
 }
@@ -182,7 +183,7 @@ plane { y, 0 pigment { White } }
             normal {
                 tiling int(1+24*rand(R1))
             }
-            scale 0.2
+            scale <0.2, 0.5, 0.2>
         }
     }
 #end

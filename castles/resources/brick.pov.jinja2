@@ -6,6 +6,7 @@ background { color Black }
 #declare RT=seed({{ seed }});
 
 camera {
+    right x*image_width/image_height // Square pixels
     location <25+rand(RT)*40, 10+rand(RT)*10-5, 25+rand(RT)*40>
     look_at  <20-20*rand(RT), 0, 20-20*rand(RT)>
 }

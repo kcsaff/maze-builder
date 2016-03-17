@@ -13,6 +13,7 @@ background { color Black }
 #declare WIND=rand(RT);
 
 camera {
+    right x*image_width/image_height // Square pixels
     rotate <20-40*rand(RT), 0, 0>
     location <10, 10, 10>
     look_at  <1, 1, 1>
@@ -201,7 +202,7 @@ plane { y, 0 texture { DefaultTexture } }
             texture { HighlightPigment }
         }
 
-        #local PoleHeight=HEIGHT*0.5;
+        #local PoleHeight=HEIGHT*0.25;
 
         object { // flagpole
             cylinder {
@@ -210,7 +211,7 @@ plane { y, 0 texture { DefaultTexture } }
             texture { DefaultTexture }
         }
 
-        #local FlagHeight=PoleHeight*0.3;
+        #local FlagHeight=PoleHeight*0.66;
         #local FlagLength=2+2*rand(RT);
         #local WindStrength = 15 + 10*rand(RT);
 
