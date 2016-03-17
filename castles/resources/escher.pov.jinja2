@@ -1,0 +1,173 @@
+#include "colors.inc"
+background { color Black }
+camera {
+    location <10, 10, 10>
+    look_at  <1, 1, 1>
+}
+light_source { <-30, 200, 140> color White }
+
+global_settings {
+    radiosity {
+      pretrace_start 0.08
+      pretrace_end   0.01
+      count 150
+      nearest_count 10
+      error_bound 0.5
+      recursion_limit 3
+      low_error_factor 0.5
+      gray_threshold 0.0
+      minimum_reuse 0.005
+      maximum_reuse 0.2
+      brightness 1
+      adc_bailout 0.005
+    }
+  }
+
+plane { y, 0 pigment { White } }
+
+#declare HEIGHT=1.5;
+#declare FENCE=1.0;
+#declare R1=seed(1);
+#declare WALL=0.1;
+#declare HALL=1-2*WALL;
+#declare STAIRCOUNT = 5;
+
+#declare UniformCompoundThreeCubes = union {
+    object {
+        box { <-0.5, -0.5, -0.5>, <+0.5, +0.5, +0.5> }
+        rotate <45, 0, 0>
+    }
+    object {
+        box { <-0.5, -0.5, -0.5>, <+0.5, +0.5, +0.5> }
+        rotate <0, 45, 0>
+    }
+    object {
+        box { <-0.5, -0.5, -0.5>, <+0.5, +0.5, +0.5> }
+        rotate <0, 0, 45>
+    }
+}
+
+#declare SimplePyramid = prism {
+        conic_sweep
+        linear_spline
+        0, // height 1
+        1, // height 2
+        5, // the number of points making up the shape...
+        <0.6,0.6>,<-0.6,0.6>,<-0.6,-0.6>,<0.6,-0.6>,<0.6,0.6>
+        rotate <180, 0, 0>
+        scale <1, HEIGHT, 1>
+}
+
+#declare STAIR = union {
+    box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+2*HALL/STAIRCOUNT, 1*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 2*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+3*HALL/STAIRCOUNT, 2*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 3*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+4*HALL/STAIRCOUNT, 3*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 4*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+5*HALL/STAIRCOUNT, 4*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 5*HEIGHT/STAIRCOUNT, +WALL> }
+}
+
+#macro MakeWallX (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+#end
+
+#macro MakeWallY (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+#end
+
+#macro MakeArchX (X, Y, Z)
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+#end
+
+#macro MakeArchY (X, Y, Z)
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+#end
+
+#macro MakeOpenX (X, Y, Z)
+#end
+
+#macro MakeOpenY (X, Y, Z)
+#end
+
+#macro MakeBlockX (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box { <X+0.15, Z+0, Y-0.05>, <X+0.25, Z+FENCE, Y+0.05> pigment { White } }
+    box { <X+0.35, Z+0, Y-0.05>, <X+0.45, Z+FENCE, Y+0.05> pigment { White } }
+    box { <X+0.55, Z+0, Y-0.05>, <X+0.65, Z+FENCE, Y+0.05> pigment { White } }
+    box { <X+0.75, Z+0, Y-0.05>, <X+0.85, Z+FENCE, Y+0.05> pigment { White } }
+    box { <X+1-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+#end
+
+#macro MakeBlockY (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box { <X-0.05, Z+0, Y+0.15>, <X+0.05, Z+FENCE, Y+0.25> pigment { White } }
+    box { <X-0.05, Z+0, Y+0.35>, <X+0.05, Z+FENCE, Y+0.45> pigment { White } }
+    box { <X-0.05, Z+0, Y+0.55>, <X+0.05, Z+FENCE, Y+0.65> pigment { White } }
+    box { <X-0.05, Z+0, Y+0.75>, <X+0.05, Z+FENCE, Y+0.85> pigment { White } }
+    box { <X-WALL, Z+0, Y+1-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+#end
+
+#macro MakeSpire (X, Y, Z)
+    union {
+        box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> }
+
+        #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+        box { <X-0.45, Z+HEIGHT, Y-0.45>, <X-0.37, Z+spire, Y-0.37> }
+        box { <X-0.45, Z+HEIGHT, Y+0.37>, <X-0.37, Z+spire, Y+0.45> }
+        box { <X+0.37, Z+HEIGHT, Y+0.37>, <X+0.45, Z+spire, Y+0.45> }
+        box { <X+0.37, Z+HEIGHT, Y-0.45>, <X+0.45, Z+spire, Y-0.37> }
+        box { <X-0.5, Z+spire, Y-0.5>, <X+0.5, Z+spire+0.25, Y+0.5> }
+
+        #if (rand(R1) < 0.10)
+            object {
+                SimplePyramid
+                translate <X, Z+spire+0.25+HEIGHT, Y>
+            }
+        #else
+            object {
+                UniformCompoundThreeCubes
+                translate <X, Z+spire+0.25+sqrt(2)/2, Y>
+            }
+        #end
+
+        pigment { White }
+    }
+#end
+
+#macro MakeCourtyard (X, Y, Z, W, L)
+#end
+
+#macro MakeTower (X, Y, Z, W, L)
+    #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    union {
+        difference {
+            box { <X-WALL*1.1, Z, Y-WALL*1.1>, <X+W+WALL*1.1, Z+tower, Y+L+WALL*1.1> }
+            box { <X, Z+tower-2*WALL, Y>, <X+W, Z+tower+WALL, Y+L> }
+        }
+        superellipsoid {
+            <0.05, 0.30>
+            rotate<90, 0, 0>
+            translate <1, 1, 1>
+            scale 0.5
+            scale <W, tower, L>
+            translate <X, Z+WALL, Y>
+        }
+        pigment { White }
+    }
+#end
+
+#macro MakeStair (X, Y, Z, W, L)
+    object {
+        STAIR
+        rotate y*degrees(atan2(L, W))
+        translate <X, Z, Y>
+        pigment { White }
+    }
+#end
+
+{% for cmd,coords in parts -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }})
+{% endfor %}
+
+{% for cmd,coords,dims in blocks -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }}, {{ dims[0] }}, {{ dims[1] }})
+{% endfor %}

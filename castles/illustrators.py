@@ -2,6 +2,7 @@ from .faces import V, Surface
 import math
 import pkgutil
 import jinja2
+import random
 
 
 RESOURCE_PACKAGE = 'castles.resources'
@@ -36,7 +37,7 @@ class SimpleSurfaceIllustrator(object):
 
 
 class SimpleTemplateIllustrator(object):
-    def __init__(self, template_name='simple.pov.jinja2'):
+    def __init__(self, template_name='pure.pov.jinja2'):
         self.template_name = template_name
 
         self.parts = list()
@@ -79,4 +80,9 @@ class SimpleTemplateIllustrator(object):
         self.blocks.append(('MakeStair', (x, y, 0), (dx, dy)))
 
     def make(self):
-        return template(self.template_name, parts=self.parts, blocks=self.blocks)
+        return template(
+            self.template_name,
+            parts=self.parts,
+            blocks=self.blocks,
+            seed=random.randint(1, 255)
+        )

@@ -1,0 +1,304 @@
+#include "colors.inc"
+#include "textures.inc"
+#include "stones2.inc"
+#include "woods.inc"
+background { color Black }
+#declare RT=seed({{ seed }});
+
+camera {
+    location <25+rand(RT)*40, 10+rand(RT)*10-5, 25+rand(RT)*40>
+    look_at  <20-20*rand(RT), 0, 20-20*rand(RT)>
+}
+light_source { <-30, 200, 140> color rgb<1-rand(RT)*0.02, 1-rand(RT)*0.02, 1-rand(RT)*0.02> }
+
+sky_sphere {
+  pigment {
+    gradient y
+      color_map {
+        [ 0.5  color CornflowerBlue ]
+        [ 1.0  color MidnightBlue ]
+        }
+    scale 2
+    translate -1
+    }
+  emission rgb <0.8,0.8,1>
+  }
+
+global_settings {
+    radiosity {
+      pretrace_start 0.08
+      pretrace_end   0.01
+      count 150
+      nearest_count 10
+      error_bound 0.5
+      recursion_limit 3
+      low_error_factor 0.5
+      gray_threshold 0.0
+      minimum_reuse 0.005
+      maximum_reuse 0.2
+      brightness 1
+      adc_bailout 0.005
+    }
+  }
+
+/*
+       Title: Bricks.Inc
+      Author: Jeff Lee <shipbrk@gate.net>
+ Description: Creates a decent brick pattern, with random variation in brick colour.
+     Version: 1.0
+        Date: 19 February 1998
+    Platform: POV-Ray 3.0
+*/
+
+#declare brf = rand(RT) * 1.50 - 0.25;
+
+#declare clamp=function(x){min(1.0, max(0.0, x))};
+
+#declare newBrickLowlight=colour rgb <clamp(0.30+0.10*brf),clamp(0.25-0.20*brf),clamp(0.20-0.20*brf)>;
+#declare newBrickHighlight=colour rgb <clamp(0.70+0.05*brf),clamp(0.65-0.40*brf),clamp(0.50-0.40*brf)>;
+#declare newBrickMidtone=colour rgb <clamp(0.50+0.10*brf),clamp(0.45-0.35*brf),clamp(0.35-0.25*brf)>;
+#declare newBrickMortar=colour rgb <0.90,0.89,0.85>;
+
+#ifdef (Quick)
+  #declare T_newBrick = texture { pigment { newBrickMidtone }}
+#else
+  #ifndef (newBrickWidth)
+    #declare newBrickWidth=8;
+  #end
+  #ifndef (newBrickHeight)
+    #declare newBrickHeight=3;
+  #end
+  #ifndef (newBrickDepth)
+    #declare newBrickDepth=4.5;
+  #end
+  #ifndef (newBrickMortarWidth)
+    #declare newBrickMortarWidth=0.35;
+  #end
+  #ifndef (newBrickClearMortar)
+    #declare newBrickClearMortar=0;
+  #end
+  #ifndef (newBrickBozoScale)
+    #declare newBrickBozoScale=100;
+  #end
+  #ifndef (newBrickHighlightPos)
+    #declare newBrickHighlightPos=0.80;
+  #end
+  #ifndef (newBrickLowlightPos)
+    #declare newBrickLowlightPos=0.20;
+  #end
+  #ifndef (newBrickTurbulence)
+    #declare newBrickTurbulence=0.05;
+  #end
+  #ifndef (newBrickNormal)
+    #declare newBrickNormal=normal { granite 0.1 }
+  #end
+  #ifndef (newBrickFinish)
+    #declare newBrickFinish=finish {}
+  #end
+
+  #declare P_newBrickA = pigment {
+    bozo
+    pigment_map {
+      [0.00                 newBrickMidtone]
+      [newBrickLowlightPos  newBrickLowlight]
+      [newBrickHighlightPos newBrickHighlight]
+      [1.00                 newBrickMidtone]
+    }
+    scale newBrickBozoScale
+  }
+
+  #declare P_newBrickB = pigment {
+    P_newBrickA
+    warp { repeat x*newBrickWidth offset <0,15*newBrickHeight,0> }
+  }
+
+  #declare P_newBrickC = pigment {
+    P_newBrickB
+    warp { repeat z*newBrickDepth offset <0,20*newBrickHeight,0> }
+  }
+
+  #declare P_newBrickD = pigment {
+    P_newBrickC
+    warp { repeat y*newBrickHeight offset <newBrickWidth*7.5,0,newBrickDepth*6.5> }
+    translate z*(newBrickDepth/2)
+  }
+
+  #declare P_newBrickMortar = pigment { newBrickMortar }
+
+  #declare P_newBrick = pigment {
+    brick pigment { P_newBrickMortar }, pigment { P_newBrickD }
+    brick_size <newBrickWidth,newBrickHeight,newBrickDepth>
+    mortar newBrickMortarWidth
+  }
+
+  #declare T_newBrick = texture {
+    pigment { P_newBrick turbulence newBrickTurbulence }
+    normal { newBrickNormal }
+    finish { newBrickFinish }
+  }
+#end
+
+#declare GroundTexture = texture {
+    T_Wood2
+    rotate <12, 34, 56>
+    scale 0.07
+}
+
+// Texture from http://www.f-lohmueller.de/pov_tut/x_sam/sam_130e.htm
+#declare TowerSandstone =
+ texture{ pigment{ color rgb<0.9,0.78,0.6>}
+          normal { bumps 0.5 scale 0.015 }
+          finish { diffuse 0.9 phong 0.1}
+        } // end of texture
+#declare TowerSandstoneDark =
+ texture{ pigment{
+          color rgb<0.9, 0.78, 0.6>*0.95}
+          normal { bumps 0.5 scale 0.015 }
+          finish { diffuse 0.9 phong 0.1}
+        } // end of texture
+#declare TowerSandstoneBrick =
+texture{
+  pigment{ color rgb<0.9,0.78,0.6>}
+  normal {
+    pigment_pattern{ brick
+                     color rgb 0.2,
+                     color rgb 0.8
+                     scale 0.0245
+                     translate<0,0,0>
+                     rotate<0,0,0>
+                    } // end pattern
+             0.35 // normal intensity
+          } // end of normal
+   finish { diffuse 0.9 phong 0.1}
+ } // end of texture
+
+#declare T_newBrick2=texture {
+    T_newBrick
+    scale 0.01
+}
+
+#declare WallTexture=T_newBrick2
+#declare BlockTexture=Brass_Valley
+#declare RoofTexture=Brass_Valley
+
+#declare HEIGHT=1.5;
+#declare FENCE=1.15;
+#declare R1=seed(1);
+#declare WALL=0.1;
+#declare HALL=1-2*WALL;
+#declare STAIRCOUNT = 5;
+
+#declare STAIR = union {
+    box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+2*HALL/STAIRCOUNT, 1*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 2*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+3*HALL/STAIRCOUNT, 2*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 3*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+4*HALL/STAIRCOUNT, 3*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 4*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+5*HALL/STAIRCOUNT, 4*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 5*HEIGHT/STAIRCOUNT, +WALL> }
+    texture { WallTexture }
+}
+
+#macro MakeWallX (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { WallTexture } }
+#end
+
+#macro MakeWallY (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { WallTexture } }
+#end
+
+#macro MakeArchX (X, Y, Z)
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { WallTexture } }
+#end
+
+#macro MakeArchY (X, Y, Z)
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { WallTexture } }
+#end
+
+#macro MakeOpenX (X, Y, Z)
+#end
+
+#macro MakeOpenY (X, Y, Z)
+#end
+
+#macro MakeBlockX (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> texture { WallTexture } }
+    {% for i in range(1, 10) %}
+        cone {
+            <X+{{ i }}*WALL, Z+0, Y>, WALL/2
+            <X+{{ i }}*WALL, Z+FENCE, Y>, 0
+            texture { BlockTexture }
+        }
+    {% endfor %}
+    box { <X+1-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { WallTexture } }
+#end
+
+#macro MakeBlockY (X, Y, Z)
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+WALL> texture { WallTexture } }
+    {% for i in range(1, 10) %}
+        cone {
+            <X, Z+0, Y+{{ i }}*WALL>, WALL/2
+            <X, Z+FENCE, Y+{{ i }}*WALL>, 0
+            texture { BlockTexture }
+        }
+    {% endfor %}
+    box { <X-WALL, Z+0, Y+1-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { WallTexture } }
+#end
+
+#macro MakeSpire (X, Y, Z)
+    box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> texture { WallTexture } }
+
+    #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    box { <X-0.45, Z+HEIGHT, Y-0.45>, <X-0.37, Z+spire, Y-0.37> texture { WallTexture } }
+    box { <X-0.45, Z+HEIGHT, Y+0.37>, <X-0.37, Z+spire, Y+0.45> texture { WallTexture } }
+    box { <X+0.37, Z+HEIGHT, Y+0.37>, <X+0.45, Z+spire, Y+0.45> texture { WallTexture } }
+    box { <X+0.37, Z+HEIGHT, Y-0.45>, <X+0.45, Z+spire, Y-0.37> texture { WallTexture } }
+    box { <X-0.5, Z+spire, Y-0.5>, <X+0.5, Z+spire+0.25, Y+0.5> texture { WallTexture } }
+
+    prism {
+        conic_sweep
+        linear_spline
+        0, // height 1
+        1, // height 2
+        5, // the number of points making up the shape...
+        <0.6,0.6>,<-0.6,0.6>,<-0.6,-0.6>,<0.6,-0.6>,<0.6,0.6>
+        rotate <180, 0, 0>
+        scale <1, HEIGHT, 1>
+        translate <X, spire+0.25+HEIGHT, Y>
+        texture { RoofTexture }
+  }
+#end
+
+#macro MakeCourtyard (X, Y, Z, W, L)
+    box { <X+3*WALL, 0, Y+3*WALL>, <X+W-3*WALL*1.1, WALL/2, Y+L-3*WALL> texture { WallTexture } }
+#end
+
+#macro MakeTower (X, Y, Z, W, L)
+    #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+    union {
+        box { <X-WALL*1.1, 0, Y-WALL*1.1>, <X+W+WALL*1.1, tower, Y+L+WALL*1.1> }
+
+        box { <X, tower, Y>, <X+WALL, tower+1.5*WALL, Y+L> }
+        box { <X, tower, Y>, <X+W, tower+1.5*WALL, Y+WALL> }
+        box { <X, tower, Y+L-WALL>, <X+W, tower+1.5*WALL, Y+L> }
+        box { <X+W-WALL, tower, Y>, <X+W, tower+1.5*WALL, Y+L> }
+        texture { WallTexture }
+    }
+#end
+
+#macro MakeStair (X, Y, Z, W, L)
+    object {
+        STAIR
+        rotate y*degrees(atan2(L, W))
+        translate <X, Z, Y>
+        texture { WallTexture }
+    }
+#end
+
+plane { y, 0 texture { GroundTexture } }
+
+{% for cmd,coords in parts -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }})
+{% endfor %}
+
+{% for cmd,coords,dims in blocks -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }}, {{ dims[0] }}, {{ dims[1] }})
+{% endfor %}
