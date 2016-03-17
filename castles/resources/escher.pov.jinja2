@@ -164,7 +164,6 @@ plane { y, 0 pigment { White } }
         #else
             object {
                 UniformCompoundThreeCubes
-                rotate <0, 45, 0>
                 scale compound_scale
                 translate <X, Z+spire+0.25+compound_scale*sqrt(2)/2, Y>
             }
@@ -175,6 +174,16 @@ plane { y, 0 pigment { White } }
 #end
 
 #macro MakeCourtyard (X, Y, Z, W, L)
+    box {
+        <X+3*WALL, Z, Y+3*WALL>, <X+W-3*WALL, Z+WALL*0.6, Y+L-3*WALL>
+        texture {
+            pigment { White }
+            normal {
+                tiling int(1+24*rand(R1))
+            }
+            scale 0.2
+        }
+    }
 #end
 
 #macro MakeTower (X, Y, Z, W, L)
