@@ -32,6 +32,15 @@ plane { y, 0 pigment { White } }
 #declare HALL=1-2*WALL;
 #declare STAIRCOUNT = 5;
 
+#declare WhiteStucco = texture {
+    pigment { White }
+    normal { bumps 0.2 scale 0.02 }
+}
+
+#declare WhiteTreasure = texture {
+    pigment { White }
+}
+
 #declare UnitPyramid = prism {
         conic_sweep
         linear_spline
@@ -82,19 +91,6 @@ plane { y, 0 pigment { White } }
     scale <1.2, HEIGHT, 1.2>
 }
 
-/*
-#declare SimplePyramid = prism {
-        conic_sweep
-        linear_spline
-        0, // height 1
-        1, // height 2
-        5, // the number of points making up the shape...
-        <0.6,0.6>,<-0.6,0.6>,<-0.6,-0.6>,<0.6,-0.6>,<0.6,0.6>
-        rotate <180, 0, 0>
-        scale <1, HEIGHT, 1>
-}
-*/
-
 #declare STAIR = union {
     box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
     box { <-0.5+2*HALL/STAIRCOUNT, 1*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 2*HEIGHT/STAIRCOUNT, +WALL> }
@@ -104,19 +100,19 @@ plane { y, 0 pigment { White } }
 }
 
 #macro MakeWallX (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { WhiteStucco } }
 #end
 
 #macro MakeWallY (X, Y, Z)
-    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+    box { <X-WALL, Z+0, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { WhiteStucco } }
 #end
 
 #macro MakeArchX (X, Y, Z)
-    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> texture { WhiteStucco } }
 #end
 
 #macro MakeArchY (X, Y, Z)
-    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> pigment { White } }
+    box { <X-WALL, Z+HEIGHT-0.2, Y-WALL>, <X+WALL, Z+HEIGHT, Y+1+WALL> texture { WhiteStucco } }
 #end
 
 #macro MakeOpenX (X, Y, Z)
@@ -145,14 +141,18 @@ plane { y, 0 pigment { White } }
 
 #macro MakeSpire (X, Y, Z)
     union {
-        box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> }
+        union {
+            box { <X-0.5, Z+0, Y-0.5>, <X+0.5, Z+HEIGHT, Y+0.5> }
 
-        #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
-        box { <X-0.45, Z+HEIGHT, Y-0.45>, <X-0.37, Z+spire, Y-0.37> }
-        box { <X-0.45, Z+HEIGHT, Y+0.37>, <X-0.37, Z+spire, Y+0.45> }
-        box { <X+0.37, Z+HEIGHT, Y+0.37>, <X+0.45, Z+spire, Y+0.45> }
-        box { <X+0.37, Z+HEIGHT, Y-0.45>, <X+0.45, Z+spire, Y-0.37> }
-        box { <X-0.5, Z+spire, Y-0.5>, <X+0.5, Z+spire+0.25, Y+0.5> }
+            #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
+            box { <X-0.45, Z+HEIGHT, Y-0.45>, <X-0.37, Z+spire, Y-0.37> }
+            box { <X-0.45, Z+HEIGHT, Y+0.37>, <X-0.37, Z+spire, Y+0.45> }
+            box { <X+0.37, Z+HEIGHT, Y+0.37>, <X+0.45, Z+spire, Y+0.45> }
+            box { <X+0.37, Z+HEIGHT, Y-0.45>, <X+0.45, Z+spire, Y-0.37> }
+            box { <X-0.5, Z+spire, Y-0.5>, <X+0.5, Z+spire+0.25, Y+0.5> }
+
+            texture { WhiteStucco }
+        }
 
         #local compound_scale=sqrt(2)/2;
         #if (rand(R1) < 0.50)
@@ -160,16 +160,16 @@ plane { y, 0 pigment { White } }
                 EschersSolid
                 rotate <0, 45, 0>
                 translate <X, Z+spire+0.25+0.5, Y>
+                texture { WhiteTreasure }
             }
         #else
             object {
                 UniformCompoundThreeCubes
                 scale compound_scale
                 translate <X, Z+spire+0.25+compound_scale*sqrt(2)/2, Y>
+                texture { WhiteTreasure }
             }
         #end
-
-        pigment { White }
     }
 #end
 
@@ -201,7 +201,7 @@ plane { y, 0 pigment { White } }
             scale <W-WALL, tower, L-WALL>
             translate <X+WALL/2, Z+WALL+WALL/2, Y+WALL/2>
         }
-        pigment { White }
+        texture { WhiteStucco }
     }
 #end
 
@@ -210,7 +210,7 @@ plane { y, 0 pigment { White } }
         STAIR
         rotate y*degrees(atan2(L, W))
         translate <X, Z, Y>
-        pigment { White }
+        texture { WhiteStucco }
     }
 #end
 
