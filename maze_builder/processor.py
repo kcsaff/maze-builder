@@ -35,7 +35,11 @@ class Processor(object):
             self.args.pov,
         ]
         if self.args.ini:
-            pov_args.append(random.choice(self.args.ini.split(',')).strip())
+            ini = random.choice(self.args.ini.split(',')).strip()
+            if ini.endswith('[]'):
+                section = random.choice(read_ini_sections(ini[:-2]))
+                ini = '{}[{}]'.format(ini[:-2], section)
+            pov_args.append(ini)
         else:
             # Default size
             pov_args.extend(['+W1024', '+H768'])
@@ -88,3 +92,12 @@ class Processor(object):
         if self.verbose:
             elapsed = clock() - started
             print('Updated status in {0:.3f}s'.format(elapsed))
+
+
+def read_ini_sections(filename):
+    if not os.path.exists(filename) and not filename.lower().endswith('.ini'):
+        filename += '.ini'
+    from configparser import ConfigParser
+    config = ConfigParser()
+    config.read(filename)
+    return config.sections()

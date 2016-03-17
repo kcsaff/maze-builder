@@ -29,5 +29,8 @@ setup(name='maze-builder',
           'console_scripts': ['maze-builder = maze_builder:entry']
       },
       include_package_data = True,
-      package_data={'maze_builder.castles.resources.': ['*.jinja2']}
-      )
+      package_data={'maze_builder.castles.resources.': ['*.jinja2']},
+      data_files=[
+          ('config', ['povray.ini'])
+      ]
+)
