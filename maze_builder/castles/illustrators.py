@@ -1,11 +1,10 @@
-from .faces import V, Surface
-import math
 import pkgutil
 import jinja2
 import random
+from maze_builder.random2 import weighted_choice
 
 
-RESOURCE_PACKAGE = 'castles.resources'
+RESOURCE_PACKAGE = 'maze_builder.castles.resources'
 
 
 def resource(resource_name):
@@ -16,30 +15,14 @@ def template(template_name, **kwargs):
     return jinja2.Template(resource(template_name)).render(**kwargs)
 
 
-class SimpleSurfaceIllustrator(object):
-    def __init__(self, wallx, wally=None):
-        self.wallx = wallx
-        self.wally = wally if wally else wallx.rotate(V.K, degrees=90)
+class WeightedTemplateIllustrator(object):
+    def __init__(self, weighted_template_dict):
+        self.weighted_template_dict = weighted_template_dict
 
         self.parts = list()
+        self.blocks = list()
 
-    def draw_wallx(self, x, y, z=0):
-        self.parts.append(self.wallx.translate((x, y, z)))
-
-    def draw_wally(self, x, y, z=0):
-        self.parts.append(self.wally.translate((x, y, z)))
-
-    def make(self):
-        faces = list()
-        for part in self.parts:
-            faces.extend(part.faces)
-        return Surface(faces)
-
-
-class SimpleTemplateIllustrator(object):
-    def __init__(self, template_name='pure.pov.jinja2'):
-        self.template_name = template_name
-
+    def reset(self):
         self.parts = list()
         self.blocks = list()
 
@@ -79,9 +62,12 @@ class SimpleTemplateIllustrator(object):
     def draw_stair(self, x, y, dx, dy):
         self.blocks.append(('MakeStair', (x, y, 0), (dx, dy)))
 
+    def _choose_template_name(self):
+        return weighted_choice(*zip(*self.weighted_template_dict.items()))
+
     def make(self):
         return template(
-            self.template_name,
+            self._choose_template_name(),
             parts=self.parts,
             blocks=self.blocks,
             seed=random.randint(1, 9999)

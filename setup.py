@@ -26,8 +26,8 @@ setup(name='maze-builder',
       packages=find_packages(),
       install_requires=reqs,
       entry_points={
-          'console_scripts': ['maze-builder = castles:entry']
+          'console_scripts': ['maze-builder = maze_builder:entry']
       },
       include_package_data = True,
-      package_data={'castles.resources.': ['*.jinja2']}
+      package_data={'maze_builder.castles.resources.': ['*.jinja2']}
       )
