@@ -75,5 +75,8 @@ class SimpleTemplateIllustrator(object):
     def draw_tower(self, x, y, width, length):
         self.blocks.append(('MakeTower', (x, y, 0), (width, length)))
 
+    def draw_stair(self, x, y, dx, dy):
+        self.blocks.append(('MakeStair', (x, y, 0), (dx, dy)))
+
     def make(self):
         return template(self.template_name, parts=self.parts, blocks=self.blocks)

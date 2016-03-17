@@ -21,14 +21,15 @@ class CastleTwoLevel(object):
 
             self.lower = Route(lower_rooms)
             self.upper = Route(upper_rooms)
+
             self.rooms = set(lower_rooms) | set(upper_rooms)
 
         @property
         def route_sets(self):
             r = list()
-            if all(not room.blocked for room in self.lower.rooms):
+            if self.lower and all(not room.blocked for room in self.lower.rooms):
                 r.append([self.lower])
-            if all(not room.blocked for room in self.upper.rooms):
+            if self.upper and all(not room.blocked for room in self.upper.rooms):
                 r.append([self.upper])
             return r
 
@@ -50,7 +51,7 @@ class CastleTwoLevel(object):
                 else:
                     return 'block' + self.dim
 
-    def __init__(self, x, y, spire_density=0.01, courtyard_density=0.01, tower_density=0.01):
+    def __init__(self, x, y, spire_density=0.01, courtyard_density=0.012, tower_density=0.007, stair_density=0.10):
         self.x, self.y = x, y
         self.lower_rooms = [[self.Room(0, i, j) for j in range(y)] for i in range(x)]
         self.upper_rooms = [[self.Room(1, i, j) for j in range(y+1)] for i in range(x+1)]
@@ -59,6 +60,7 @@ class CastleTwoLevel(object):
         self.spires = list()
         self.towers = list()
         self.courtyards = list()
+        self.stairs = list()
         self.topology = Topology()
 
         # Walls with (lower) varying x
@@ -87,6 +89,9 @@ class CastleTwoLevel(object):
         for _ in range(int(tower_density*x*y)):
             self._make_tower(random.randint(1, 3), random.randint(1, 3))
 
+        for _ in range(int(stair_density*x*y)):
+            self._make_stair()
+
         route_sets = list()
         for wall in self.walls:
             route_sets.extend(wall.route_sets)
@@ -101,13 +106,13 @@ class CastleTwoLevel(object):
             if rooms.issubset(wall.rooms):
                 yield wall
 
-    def _alloc_feature(self, width, length=None, retries=0, upout=False):
+    def _alloc_feature(self, width, length=None, retries=0, upout=False, margin=0):
         if length is None:
             length = width
         nupout = 1 if upout else 0
         while retries >= 0:
-            x = random.randint(0, self.x-width-nupout)
-            y = random.randint(0, self.y-length-nupout)
+            x = random.randint(margin, self.x-width-nupout-margin)
+            y = random.randint(margin, self.y-length-nupout-margin)
             lower_rooms = [
                 self.lower_rooms[x+i][y+j]
                 for i in range(width)
@@ -129,22 +134,48 @@ class CastleTwoLevel(object):
             room.featured = True
         return (x, y), lower_rooms, upper_rooms
 
+    def _make_stair(self, retries=2):
+        dims, uprel, dir = random.choice((
+            # Dimensions, relative of upper room, direction
+            [(2, 1), (1, 1), (0, 1)],
+            [(1, 2), (1, 1), (1, 0)],
+            [(2, 1), (1, 0), (0, -1)],
+            [(1, 2), (0, 1), (-1, 0)]
+        ))
+        pos, lower, _ = self._alloc_feature(*dims, retries=retries, margin=1)
+        if pos is None:
+            return
+
+        for wall in self._force_lower_connect(lower):
+            self.walls.remove(wall)
+
+        upper = self.upper_rooms[lower[0].x + uprel[0]][lower[0].y + uprel[1]]
+        self.topology.force(Route([upper] + lower))
+
+        center = (lower[0].x + lower[1].x + 1) / 2, (lower[0].y + lower[1].y + 1) / 2
+
+        self.stairs.append((center[0], center[1], dir[0], dir[1]))
+
     def _make_courtyard(self, width, length=None, retries=2):
         pos, lower, upper = self._alloc_feature(width, length, retries)
         if pos is None:
             return
 
+        self._force_lower_connect(lower)
+
+        for room in upper:
+            room.blocked = True
+
+        self.courtyards.append((pos[0], pos[1], width, length or width))
+
+    def _force_lower_connect(self, lower):
         walls_used = set()
         for rooms in self._adjacent_rooms(lower):
             for wall in self._find_walls(rooms):
                 if wall not in walls_used:
                     self.topology.force(wall.lower)
                     walls_used.add(wall)
-
-        for room in upper:
-            room.blocked = True
-
-        self.courtyards.append((pos[0], pos[1], width, length or width))
+        return walls_used
 
     def _make_tower(self, width, length=None, retries=2):
         pos, lower, upper = self._alloc_feature(width, length, retries, upout=True)
@@ -176,6 +207,7 @@ class CastleTwoLevel(object):
         self.spires.append((pos[0] + 1, pos[1] + 1))
 
     def draw(self, illustrator):
+
         for wall in self.walls:
             fun = getattr(illustrator, 'draw_' + wall.name(self.topology))
             fun(wall.pos[0] - self.x/2, wall.pos[1] - self.y/2)
@@ -188,6 +220,9 @@ class CastleTwoLevel(object):
 
         for tower in self.towers:
             illustrator.draw_tower(tower[0] - self.x/2, tower[1] - self.y/2, tower[2], tower[3])
+
+        for stair in self.stairs:
+            illustrator.draw_stair(stair[0] - self.x/2, stair[1] - self.y/2, stair[2], stair[3])
 
 
 class CastleOneLevel(object):

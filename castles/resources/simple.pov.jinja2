@@ -29,6 +29,16 @@ plane { y, 0 pigment { White } }
 #declare FENCE=1.0;
 #declare R1=seed(1);
 #declare WALL=0.1;
+#declare HALL=1-2*WALL;
+#declare STAIRCOUNT = 5;
+
+#declare STAIR = union {
+    box { <-0.5+1*HALL/STAIRCOUNT, 0*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 1*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+2*HALL/STAIRCOUNT, 1*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 2*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+3*HALL/STAIRCOUNT, 2*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 3*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+4*HALL/STAIRCOUNT, 3*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 4*HEIGHT/STAIRCOUNT, +WALL> }
+    box { <-0.5+5*HALL/STAIRCOUNT, 4*HEIGHT/STAIRCOUNT, -WALL>, <+0.5+WALL, 5*HEIGHT/STAIRCOUNT, +WALL> }
+}
 
 #macro MakeWallX (X, Y, Z)
     box { <X-WALL, Z+0, Y-WALL>, <X+1+WALL, Z+HEIGHT, Y+WALL> pigment { White } }
@@ -100,6 +110,15 @@ plane { y, 0 pigment { White } }
 #macro MakeTower (X, Y, Z, W, L)
     #local tower = 2*HEIGHT + 4*HEIGHT*rand(R1)*rand(R1)*rand(R1);
     box { <X-WALL*1.1, 0, Y-WALL*1.1>, <X+W+WALL*1.1, tower, Y+L+WALL*1.1> pigment { White } }
+#end
+
+#macro MakeStair (X, Y, Z, W, L)
+    object {
+        STAIR
+        rotate y*degrees(atan2(L, W))
+        translate <X, Z, Y>
+        pigment { White }
+    }
 #end
 
 {% for cmd,coords in parts -%}
