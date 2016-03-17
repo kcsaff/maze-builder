@@ -4,7 +4,7 @@ from castles.faces import Surface
 from castles.obj import write_obj
 import time
 
-castle = CastleTwoLevel(150, 150, tower_density=0.03)
+castle = CastleTwoLevel(150, 150)
 
 
 # illustrator = SimpleSurfaceIllustrator(Surface.box(1.2, 0.2, 0.5).translate((-0.1, -0.1, 0)))
