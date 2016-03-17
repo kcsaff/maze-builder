@@ -1,11 +1,21 @@
 from argparse import Namespace
 
 
-def read_config(filename, cls=Namespace):
+def read_config(filename, cls=Namespace, types=dict()):
     d = dict()
     with open(filename, 'r') as f:
         for line in f:
             if ':' in line:
                 key, value = line.strip().split(':', 1)
-                d['_'.join(key.strip().split())] = value.strip()
+                key = '_'.join(key.strip().split())
+                value = value.strip()
+                if key in types:
+                    value = types[key](value)
+                elif value.isdigit():
+                    value = int(value)
+                elif all(p.isdigit() for p in value.split('.', 1)):
+                    value = float(value)
+                else:
+                    pass  # still a string
+                d[key] = value
     return cls(**d)
