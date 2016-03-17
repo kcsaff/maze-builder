@@ -18,10 +18,11 @@ class Keys(object):
         Take the filename where you're storing your keys (since you shouldn't do that here.)
         This is just a file that looks like:
 
-            CONSUMER_KEY: dsafsafafsd
-            CONSUMER_SECRET: iuhbfusdfiu44
-            ACCESS_KEY: vjhbv99889
-            ACCESS_SECRET: ivfjslfiguhg98
+                CONSUMER_KEY: dsafsafafsd
+                CONSUMER_SECRET: iuhbfusdfiu44
+                ACCESS_KEY: vjhbv99889
+                ACCESS_SECRET: ivfjslfiguhg98
+
         """
         with open(keys_filename, 'r') as f:
             for line in f:

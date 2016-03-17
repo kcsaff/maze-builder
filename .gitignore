@@ -1,4 +1,7 @@
 __pycache__
 .idea
 keys.txt
+*.egg-info
+venv
+*.pyc
 
