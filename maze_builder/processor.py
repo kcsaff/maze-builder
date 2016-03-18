@@ -65,10 +65,29 @@ class Processor(object):
             self.tweet(OUT_FILENAME)
 
     def tweet(self, filename=OUT_FILENAME):
+        from maze_builder.bot import bot
+
+        filename = self._resize(filename)
+
+        started = clock()
+        if self.verbose:
+            print('Updating twitter status ({}kb)...'.format(os.path.getsize(filename) // 1024))
+
+        bot(self.args.keys).update_with_media(filename)
+
+        if self.verbose:
+            elapsed = clock() - started
+            print('Updated status in {0:.3f}s'.format(elapsed))
+
+    def _resize(self, filename):
+        if not self.args or not self.args.magick:
+            raise RuntimeError('No ImageMagick handler registered & it\'s required to resize! Pipeline stopping')
+
         file_size = os.path.getsize(filename)
 
         attempt = 0
         while file_size > TWITTER_FILESIZE_LIMIT and attempt < 5:
+            started = clock()
             if self.verbose:
                 print('Needs more jpeg...')
 
@@ -84,17 +103,11 @@ class Processor(object):
             filename = new_filename
             file_size = os.path.getsize(filename)
 
-        from maze_builder.bot import bot
+            if self.verbose:
+                elapsed = clock() - started
+                print('Resized image in {0:.3f}s'.format(elapsed))
 
-        started = clock()
-        if self.verbose:
-            print('Updating twitter status ({}kb)...'.format(filesize // 1024))
-
-        bot(self.args.keys).update_with_media(filename)
-
-        if self.verbose:
-            elapsed = clock() - started
-            print('Updated status in {0:.3f}s'.format(elapsed))
+        return filename
 
 
 def read_ini_sections(filename):

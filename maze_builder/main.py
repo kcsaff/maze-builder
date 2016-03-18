@@ -3,6 +3,7 @@ import os.path
 from .processor import Processor
 import sys
 from collections import namedtuple
+import shutil
 
 
 POVRAY_INI = 'povray.ini'
@@ -14,15 +15,22 @@ Settings = namedtuple(
 )
 
 
-defaults = Settings(
+DEFAULTS = Settings(
     config=None,
     verbose=0,
     keys=None,
-    pov='povray',  # This is correct on Linux anyway
+    pov=None,
     ini=None,
     include_path=None,
-    magick='convert',  # Generally correct
+    magick=None,
     tweet=False,  # Misleading, change this
+)
+
+
+# Default executables, used only if we detect their presence.
+PROG_DEFAULTS = dict(
+    pov='povray',
+    magick='convert',
 )
 
 
@@ -71,8 +79,15 @@ def _find_config(filename):
     return None
 
 
+def make_defaults():
+    return DEFAULTS._replace(**{
+        arg: prog for arg, prog in PROG_DEFAULTS.items() if shutil.which(prog)
+    })
+
+
 def main(args=None):
     # Rigamarole of loading args from config (if any) & setting as defaults
+    defaults = make_defaults()
 
     args = defaults._replace(**vars(args)) if args else defaults
     knargs, _ = parser.parse_known_args()
@@ -91,6 +106,11 @@ def main(args=None):
     if args.verbose >= 4:
         for key, value in sorted(vars(args).items()):
             print('{}: {}'.format(key, value))
+
+    for prog in PROG_DEFAULTS:
+        executable = getattr(args, prog)
+        if executable and not shutil.which(executable):
+            raise RuntimeError('Executable {} not found!'.format(executable))
 
     from maze_builder.castles.builder import CastleBuilder
     Processor(CastleBuilder(), args or parser.parse_args()).start()
