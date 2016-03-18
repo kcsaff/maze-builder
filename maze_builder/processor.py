@@ -4,7 +4,7 @@ import subprocess
 import os.path
 
 
-TWITTER_FILESIZE_LIMIT = 2800000 # About 3 Meg, we round down
+TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
 NEW_FILESIZE_LIMIT = '1999kb'
 OUT_FILENAME = 'out.png'
 JPG_FILENAME = 'out{}.jpg'
@@ -65,21 +65,24 @@ class Processor(object):
             self.tweet(OUT_FILENAME)
 
     def tweet(self, filename=OUT_FILENAME):
-        filesize = os.path.getsize(filename)
-        attempt=0
+        file_size = os.path.getsize(filename)
+
+        attempt = 0
         while filesize > TWITTER_FILESIZE_LIMIT and attempt < 5:
             if self.verbose:
                 print('Needs more jpeg...')
 
             new_filename = JPG_FILENAME.format(attempt)
-            subprocess.check_call([
+            call_args = [
                 self.args.magick, filename,
                 '-define', 'jpeg:extent={}'.format(NEW_FILESIZE_LIMIT),
-                '-scale', '70%',
-                new_filename
-            ])
+            ]
+            if attempt > 0:
+                call_args.extend(['-scale', '70%'])
+            call_args.append(new_filename)
+            subprocess.check_call(call_args)
             filename = new_filename
-            filesize = os.path.getsize(filename)
+            file_size = os.path.getsize(filename)
 
         from maze_builder.bot import bot
 
