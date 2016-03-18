@@ -392,22 +392,25 @@ plane { y, 0 texture { DefaultTexture } }
             #end
         }
 
+        #if (XSpireDoorHeightZ > 0)
         intersection {
             box { <-WALL*2, 0, -WALL*2>, <W+WALL*2, tower, L+WALL*2> }
-            #if (XSpireDoorHeightZ > 0)
-                object {
-                    MakeSpireDoorPerch(W+WALL*3)
-                    translate <0, XSpireDoorHeightZ, XSpireDoorY>
-                }
-            #end
-            #if (YSpireDoorHeightZ > 0)
-                object {
-                    MakeSpireDoorPerch(L+WALL*3)
-                    rotate <0, 90, 0>
-                    translate <YSpireDoorX, YSpireDoorHeightZ, 0>
-                }
-            #end
+            object {
+                MakeSpireDoorPerch(W+WALL*3)
+                translate <0, XSpireDoorHeightZ, XSpireDoorY>
+            }
         }
+        #end
+        #if (YSpireDoorHeightZ > 0)
+        intersection {
+            box { <-WALL*2, 0, -WALL*2>, <W+WALL*2, tower, L+WALL*2> }
+            object {
+                MakeSpireDoorPerch(L+WALL*3)
+                rotate <0, 90, 0>
+                translate <YSpireDoorX, YSpireDoorHeightZ, 0>
+            }
+        }
+        #end
         translate <X, Z, Y>
         texture { DefaultTexture }
     }
