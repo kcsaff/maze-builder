@@ -24,10 +24,10 @@ class CastleBuilder(object):
         self.features = features
         if illustrator is None:
             illustrator = WeightedTemplateIllustrator({
-                    #'evil.pov.jinja2':    31,
-                    #'fantasy.pov.jinja2': 38,
+                    'evil.pov.jinja2':    31,
+                    'fantasy.pov.jinja2': 38,
                     'escher.pov.jinja2':  25,
-                    #'brick.pov.jinja2':    4,
+                    'brick.pov.jinja2':    4,
                     'pure.pov.jinja2':     2,
             })
         self.illustrator = illustrator
