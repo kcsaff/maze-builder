@@ -97,7 +97,7 @@ class Processor(object):
 def read_ini_sections(filename):
     if not os.path.exists(filename) and not filename.lower().endswith('.ini'):
         filename += '.ini'
-    from configparser import ConfigParser
-    config = ConfigParser()
-    config.read(filename)
-    return config.sections()
+    with open(filename, 'r') as f:
+        data = f.read()
+    import re
+    return re.findall('^\[(\w+)\]', data, re.MULTILINE)
