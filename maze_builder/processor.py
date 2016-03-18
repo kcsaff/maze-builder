@@ -101,3 +101,4 @@ def read_ini_sections(filename):
         data = f.read()
     import re
     return re.findall('^\[(\w+)\]', data, re.MULTILINE)
+
