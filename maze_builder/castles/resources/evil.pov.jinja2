@@ -60,7 +60,13 @@ global_settings {
 
 #declare DefaultLava=texture {
     Water
-    pigment { Red }
+    pigment {
+    #if (rand(RT) < 0.7)
+        Red
+    #else
+        rgb CHSV2RGB(<360*rand(RT), 1.0, 1.0>)
+    #end
+    }
     finish { ambient PowerOfEvil }
 };
 

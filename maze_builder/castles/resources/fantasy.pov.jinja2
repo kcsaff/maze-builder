@@ -12,6 +12,7 @@ background { color Black }
 #declare HALL=1-2*WALL;
 #declare STAIRCOUNT = 5;
 #declare WIND=rand(RT);
+#declare LARGE=10;
 
 camera {
     right x*image_width/image_height // Square pixels
@@ -210,21 +211,73 @@ plane { y, 0 texture { DefaultTexture } }
 #end
 
 #declare SpireRadius=0.6;
+#declare SpireDoorHeight=0.5;
+#declare SpireDoorHeightTotal=SpireDoorHeight+WALL;
+
+#macro MakeSpireDoor(MaxSize)
+    union {
+        box { <-MaxSize, 0, -WALL>, <+MaxSize, +SpireDoorHeight, +WALL> }
+        cylinder { <-MaxSize, +SpireDoorHeight, 0>, <+MaxSize, +SpireDoorHeight, 0>, WALL }
+    }
+#end
+
+
+//You must intersect this with what you're interested in
+#if (rand(RT) < 0.5)
+    #macro MakeSpireDoorPerch(MaxSize)
+        box { <-MaxSize, 0, -WALL*1.2>, <+MaxSize, -WALL, +WALL*1.2> }
+    #end
+#else
+    #macro MakeSpireDoorPerch(MaxSize)
+        cylinder { <-MaxSize, -WALL, 0>, <+MaxSize, -WALL, 0>, WALL }
+    #end
+#end
 
 #macro MakeSpire (X, Y, Z)
 
     #local spire = HEIGHT + 1 + 1.5*HEIGHT*rand(R1);
-    #local notch = 0.5;
+    #local notch = SpireDoorHeight;
 
     union {
-        object { // tower
+        union { // tower
             difference {
                 cone { 0, SpireRadius+WALL, <0, spire, 0>, SpireRadius-WALL }
-                box { <-WALL, +HEIGHT, -SpireRadius*2>, <+WALL, +HEIGHT+notch, +SpireRadius*2> }
-                box { <-SpireRadius*2, +HEIGHT, -WALL>, <+SpireRadius*2, +HEIGHT+notch, +WALL> }
-                cylinder { <-SpireRadius*2, +HEIGHT+notch, 0>, <+SpireRadius*2, +HEIGHT+notch, 0>, WALL }
-                cylinder { <0, +HEIGHT+notch, -SpireRadius*2>, <0, +HEIGHT+notch, +SpireRadius*2>, WALL }
+                object {
+                    MakeSpireDoor(SpireRadius+WALL)
+                    translate <0, HEIGHT, 0>
+                }
+                object {
+                    MakeSpireDoor(SpireRadius+WALL)
+                    translate <0, HEIGHT, 0>
+                    rotate<0, 90, 0>
+                }
+                #local SpireDoorSpace = (spire - SpireDoorHeightTotal - WALL) - (HEIGHT + SpireDoorHeightTotal);
+                #if (rand(R1) < 0.75 & rand(R1) < SpireDoorSpace)
+                    #local SpireDoorHeightZ = HEIGHT + SpireDoorHeightTotal + rand(R1) * SpireDoorSpace;
+                    #local SpireDoorRotation = 180 * rand(R1);
+                    object {
+                        MakeSpireDoor(SpireRadius+WALL)
+                        translate <0, SpireDoorHeightZ, 0>
+                        rotate <0, SpireDoorRotation, 0>
+                    }
+                #else
+                    #local SpireDoorHeightZ = 0;
+                    #local SpireDoorRotation = 0;
+                #end
+
             }
+
+            #if (SpireDoorHeightZ > 0)
+                object {
+                    intersection {
+                        object { MakeSpireDoorPerch(SpireRadius+WALL*3) }
+                        cone { 0, SpireRadius+WALL*3, <0, spire, 0>, SpireRadius+WALL }
+                    }
+                    translate <0, SpireDoorHeightZ, 0>
+                    rotate <0, SpireDoorRotation, 0>
+                }
+            #end
+
             texture { DefaultTexture }
         }
 
@@ -290,26 +343,73 @@ plane { y, 0 texture { DefaultTexture } }
 
 #macro MakeTower (X, Y, Z, W, L)
     #local tower = HEIGHT + 1.5 + 4*rand(R1)*rand(R1)*rand(R1);
+    superellipsoid {
+        <0.25, 0.50>
+        rotate<90, 0, 0>
+        translate <1, 1, 1>
+        scale 0.5
+        scale <W, 1, L>
+        translate <0, tower-0.5, 0>
+
+        translate <X, Z, Y>
+        texture { HighlightPigment }
+    }
+    #local LowestDoorHeight=HEIGHT+WALL*2;
     union {
-        superellipsoid {
-            <0.200, 0.001>
-            rotate<90, 0, 0>
-            translate <1, 1, 1>
-            scale 0.5
-            scale <W+WALL*3, tower, L+WALL*3>
-            translate <-WALL*1.5, 0, -WALL*1.5>
-            texture { DefaultTexture }
+        difference {
+            superellipsoid {
+                <0.200, 0.001>
+                rotate<90, 0, 0>
+                translate <1, 1, 1>
+                scale 0.5
+                scale <W+WALL*3, tower, L+WALL*3>
+                translate <-WALL*1.5, 0, -WALL*1.5>
+            }
+
+            #local SpireDoorSpace = (tower - SpireDoorHeightTotal - WALL) - LowestDoorHeight;
+            #if (rand(R1) < 0.75 & rand(R1) < SpireDoorSpace)
+                #local XSpireDoorHeightZ = LowestDoorHeight + rand(R1) * SpireDoorSpace;
+                #local XSpireDoorY = rand(R1) * L;
+                object {
+                    MakeSpireDoor(W+WALL*3)
+                    translate <0, XSpireDoorHeightZ, XSpireDoorY>
+                }
+            #else
+                #local XSpireDoorHeightZ = 0;
+                #local XSpireDoorY = 0;
+            #end
+            #if (rand(R1) < 0.75 & rand(R1) < SpireDoorSpace)
+                #local YSpireDoorHeightZ = LowestDoorHeight + rand(R1) * SpireDoorSpace;
+                #local YSpireDoorX = rand(R1) * W;
+                object {
+                    MakeSpireDoor(L+WALL*3)
+                    rotate <0, 90, 0>
+                    translate <YSpireDoorX, YSpireDoorHeightZ, 0>
+                }
+            #else
+                #local YSpireDoorHeightZ = 0;
+                #local YSpireDoorX = 0;
+            #end
         }
-        superellipsoid {
-            <0.25, 0.50>
-            rotate<90, 0, 0>
-            translate <1, 1, 1>
-            scale 0.5
-            scale <W, 1, L>
-            translate <0, tower-0.5, 0>
-            texture { HighlightPigment }
+
+        intersection {
+            box { <-WALL*2, 0, -WALL*2>, <W+WALL*2, tower, L+WALL*2> }
+            #if (XSpireDoorHeightZ > 0)
+                object {
+                    MakeSpireDoorPerch(W+WALL*3)
+                    translate <0, XSpireDoorHeightZ, XSpireDoorY>
+                }
+            #end
+            #if (YSpireDoorHeightZ > 0)
+                object {
+                    MakeSpireDoorPerch(L+WALL*3)
+                    rotate <0, 90, 0>
+                    translate <YSpireDoorX, YSpireDoorHeightZ, 0>
+                }
+            #end
         }
         translate <X, Z, Y>
+        texture { DefaultTexture }
     }
 #end
 
