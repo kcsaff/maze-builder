@@ -20,34 +20,34 @@ class CastleTwoLevel(object):
             self.dim = dim
             self.pos = pos
 
-            self.lower = Route(lower_rooms)
-            self.upper = Route(upper_rooms)
+            self.lower = Route(lower_rooms, wall=self)
+            self.upper = Route(upper_rooms, wall=self)
 
             self.rooms = set(lower_rooms) | set(upper_rooms)
 
         @property
-        def route_sets(self):
+        def routes(self):
             r = list()
             if self.lower and all(not room.blocked for room in self.lower.rooms):
-                r.append([self.lower])
+                r.append(self.lower)
             if self.upper and all(not room.blocked for room in self.upper.rooms):
-                r.append([self.upper])
+                r.append(self.upper)
             return r
 
         def name(self, topology):
             if any(room.blocked for room in self.upper.rooms):
-                if self.lower in topology:
+                if topology.is_active(self.lower):
                     return 'open' + self.dim
                 else:
                     return 'wall' + self.dim
 
-            if self.upper in topology:
-                if self.lower in topology:
+            if topology.is_active(self.upper):
+                if topology.is_active(self.lower):
                     return 'arch' + self.dim
                 else:
                     return 'wall' + self.dim
             else:
-                if self.lower in topology:
+                if topology.is_active(self.lower):
                     return 'open' + self.dim
                 else:
                     return 'block' + self.dim
@@ -58,7 +58,7 @@ class CastleTwoLevel(object):
         self.lower_rooms = [[self.Room(0, i, j) for j in range(y)] for i in range(x)]
         self.upper_rooms = [[self.Room(1, i, j) for j in range(y+1)] for i in range(x+1)]
 
-        self.walls = list()
+        self.walls = set()
         self.features = list()
         self.topology = Topology()
 
@@ -66,7 +66,7 @@ class CastleTwoLevel(object):
             print('Generating routes...')
 
         # Walls with (lower) varying x
-        self.walls.extend(
+        self.walls.update(
             self.Wall(
                 'y', (i+1, j),
                 (self.lower_rooms[i][j], self.lower_rooms[i+1][j]),
@@ -74,13 +74,16 @@ class CastleTwoLevel(object):
             ) for i in range(x-1) for j in range(y)
         )
         # Walls with (lower) varying y
-        self.walls.extend(
+        self.walls.update(
             self.Wall(
                 'x', (i, j+1),
                 (self.lower_rooms[i][j], self.lower_rooms[i][j+1]),
                 (self.upper_rooms[i][j+1], self.upper_rooms[i+1][j+1]),
             ) for i in range(x) for j in range(y-1)
         )
+
+        for wall in self.walls:
+            self.topology.teach(*wall.routes)
 
         if verbose >= 2:
             print('Making features...')
@@ -91,13 +94,13 @@ class CastleTwoLevel(object):
         if verbose >= 2:
             print('Filling maze with walls and arches...')
 
-        route_sets = list()
+        routes = list()
         for wall in self.walls:
-            route_sets.extend(wall.route_sets)
+            routes.extend(wall.routes)
 
-        random.shuffle(route_sets)
-        for route_set in route_sets:
-            self.topology.offer(*route_set)
+        random.shuffle(routes)
+        for route in routes:
+            self.topology.offer(route)
 
     def allocate_feature(self, finish, width, length=None, retries=0, upout=False, margin=0, data=None):
         if length is None:
@@ -130,32 +133,21 @@ class CastleTwoLevel(object):
                 finish(self, (x, y), lower_rooms, upper_rooms, data)
                 break
 
-    def _find_walls(self, rooms):
-        rooms = set(rooms)
-        for wall in self.walls:
-            if rooms.issubset(wall.rooms):
-                yield wall
+    def add_feature(self, feature, x, y, z=0, *data):
+        self.features.append((feature, x, y, z, data))
 
-    def _force_lower_connect(self, lower):
-        walls_used = set()
-        for rooms in self._adjacent_rooms(lower):
-            for wall in self._find_walls(rooms):
-                if wall not in walls_used:
-                    self.topology.force(wall.lower)
-                    walls_used.add(wall)
-        return walls_used
-
-    def _adjacent_rooms(self, rooms):
-        for room0, room1 in itertools.combinations(rooms, 2):
-            if room0.adjacent(room1):
-                yield room0, room1
+    def force_connect(self, rooms):
+        routes = self.topology.routes_connecting(rooms)
+        for route in routes:
+            self.topology.force(route)
+        return routes
 
     def draw(self, illustrator):
         if self.verbose >= 2:
             print('Drawing {} features...'.format(len(self.features)))
 
-        for feature, data in self.features:
-            feature.draw(self, data, illustrator)
+        for feature, x, y, z, data in self.features:
+            illustrator.draw_feature(feature, x-self.x/2, y-self.y/2, z, *data)
 
         if self.verbose >= 2:
             print('Drawing walls...')

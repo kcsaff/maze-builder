@@ -19,48 +19,46 @@ class WeightedTemplateIllustrator(object):
     def __init__(self, weighted_template_dict):
         self.weighted_template_dict = weighted_template_dict
 
-        self.parts = list()
-        self.blocks = list()
+        self.walls = list()
+        self.features = list()
+
+        self.feature_map = dict(
+            spire='MakeSpire',
+            courtyard='MakeCourtyard',
+            tower='MakeTower',
+            stair='MakeStair',
+        )
 
     def reset(self):
-        self.parts = list()
-        self.blocks = list()
+        self.walls = list()
+        self.features = list()
 
     def draw_wallx(self, x, y, z=0):
-        self.parts.append(('MakeWallX', (x, y, z)))
+        self.walls.append(('MakeWallX', (x, y, z)))
 
     def draw_wally(self, x, y, z=0):
-        self.parts.append(('MakeWallY', (x, y, z)))
+        self.walls.append(('MakeWallY', (x, y, z)))
 
     def draw_archx(self, x, y, z=0):
-        self.parts.append(('MakeArchX', (x, y, z)))
+        self.walls.append(('MakeArchX', (x, y, z)))
 
     def draw_archy(self, x, y, z=0):
-        self.parts.append(('MakeArchY', (x, y, z)))
+        self.walls.append(('MakeArchY', (x, y, z)))
 
     def draw_openx(self, x, y, z=0):
-        self.parts.append(('MakeOpenX', (x, y, z)))
+        self.walls.append(('MakeOpenX', (x, y, z)))
 
     def draw_openy(self, x, y, z=0):
-        self.parts.append(('MakeOpenY', (x, y, z)))
+        self.walls.append(('MakeOpenY', (x, y, z)))
 
     def draw_blockx(self, x, y, z=0):
-        self.parts.append(('MakeBlockX', (x, y, z)))
+        self.walls.append(('MakeBlockX', (x, y, z)))
 
     def draw_blocky(self, x, y, z=0):
-        self.parts.append(('MakeBlockY', (x, y, z)))
+        self.walls.append(('MakeBlockY', (x, y, z)))
 
-    def draw_spire(self, x, y, z=0):
-        self.parts.append(('MakeSpire', (x, y, z)))
-
-    def draw_courtyard(self, x, y, width, length):
-        self.blocks.append(('MakeCourtyard', (x, y, 0), (width, length)))
-
-    def draw_tower(self, x, y, width, length):
-        self.blocks.append(('MakeTower', (x, y, 0), (width, length)))
-
-    def draw_stair(self, x, y, dx, dy):
-        self.blocks.append(('MakeStair', (x, y, 0), (dx, dy)))
+    def draw_feature(self, feature, x, y, z=0, *data):
+        self.features.append((self.feature_map[feature], (x, y, z), data))
 
     def _choose_template_name(self):
         return weighted_choice(*zip(*self.weighted_template_dict.items()))
@@ -68,7 +66,7 @@ class WeightedTemplateIllustrator(object):
     def make(self):
         return template(
             self._choose_template_name(),
-            parts=self.parts,
-            blocks=self.blocks,
+            walls=self.walls,
+            features=self.features,
             seed=random.randint(1, 9999)
         )

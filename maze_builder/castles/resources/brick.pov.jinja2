@@ -298,10 +298,10 @@ texture{
 
 plane { y, 0 texture { GroundTexture } }
 
-{% for cmd,coords in parts -%}
+{% for cmd,coords in walls -%}
 {{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }})
 {% endfor %}
 
-{% for cmd,coords,dims in blocks -%}
-{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }}, {{ dims[0] }}, {{ dims[1] }})
+{% for cmd,coords,data in features -%}
+{{ cmd }}({{ coords[0] }}, {{ coords[1] }}, {{ coords[2] }} {% for item in data %}, {{ item }}{% endfor %})
 {% endfor %}

@@ -1,37 +1,79 @@
 from .equivalence import Equivalence
+import itertools
 
 
 class Route(object):
-    def __init__(self, rooms, conflicts=(), spaces=None, data=None):
+    def __init__(self, rooms, spaces=None, **data):
         self.rooms = rooms
-        self.conflicts = conflicts
         self.spaces = spaces if spaces is not None else len(rooms)
         self.data = data
 
 
 class Topology(object):
-    def __init__(self):
-        self.routes = set()
+    def __init__(self, routes=()):
+        self.known_routes = set()
+        self.known_room_routes = dict()  # Dict from room pairs to routes
+
+        self.active_routes = set()
         self._spaces = dict()
-        self.conflicts = set()
 
-    def __contains__(self, route):
-        return route in self.routes
+        self.teach(*routes)
 
-    def force(self, *routes):
-        self.routes.update(routes)
+    def is_active(self, route):
+        route = self._internalize(route)
+        return route in self.active_routes
+
+    def teach(self, *routes):
+        routes = [self._internalize(route) for route in routes]
         for route in routes:
-            self.join(route.rooms)
-            self.conflicts.update(route.conflicts)
+            if route not in self.known_routes:
+                self.known_routes.add(route)
+                for rooms in itertools.permutations(route.rooms, 2):
+                    room_routes = self.known_room_routes.setdefault(rooms, set())
+                    room_routes.add(route)
 
     def offer(self, *routes):
+        routes = [self._internalize(route) for route in routes]
+        self.teach(*routes)
         if all(self._check(route) for route in routes):
             self.force(*routes)
             return True
         else:
             return False
 
+    def force(self, *routes):
+        routes = [self._internalize(route) for route in routes]
+        self.teach(*routes)
+        for route in routes:
+            if route not in self.active_routes:
+                self.active_routes.add(route)
+                self.join(route.rooms)
+
+
+    def routes_connecting(self, rooms):
+        for pair in itertools.combinations(rooms, 2):
+            if pair in self.known_room_routes:
+                yield from self.known_room_routes[pair]
+
     # Internal
+
+    def _internalize(self, route):
+        if isinstance(route, Route):
+            return route
+        elif isinstance(route, tuple) and len(route) == 2:
+            route_set = self.known_room_routes.get(route)
+            if not route_set:
+                return Route(route)
+            elif len(route_set) == 1:
+                return list(route_set)[0]
+            else:
+                raise RuntimeError(
+                    'Cannot internalize room pair into a unique Route: {} available'.format(len(route_set))
+                )
+        else:
+            raise RuntimeError(
+                'Cannot internalize route {}'.format(route)
+            )
 
     def space(self, room):
         if room not in self._spaces:
@@ -45,7 +87,6 @@ class Topology(object):
             if space not in spaces:
                 spaces.append(space)
         return spaces
-        #return set(self.space(room) for room in rooms)
 
     def join(self, rooms):
         if not rooms:
@@ -56,4 +97,5 @@ class Topology(object):
         return spaces[0].canon
 
     def _check(self, route):
-        return self.conflicts.isdisjoint(route.conflicts) and len(self.spaces(route.rooms)) >= route.spaces
+        return route not in self.active_routes \
+               and len(self.spaces(route.rooms)) >= route.spaces
