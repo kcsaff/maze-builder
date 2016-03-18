@@ -5,7 +5,7 @@ import os.path
 
 
 TWITTER_FILESIZE_LIMIT = 2800000 # About 3 Meg, we round down
-NEW_FILESIZE_LIMIT = '999kb'
+NEW_FILESIZE_LIMIT = '1999kb'
 OUT_FILENAME = 'out.png'
 JPG_FILENAME = 'out{}.jpg'
 
@@ -75,7 +75,7 @@ class Processor(object):
             subprocess.check_call([
                 self.args.magick, filename,
                 '-define', 'jpeg:extent={}'.format(NEW_FILESIZE_LIMIT),
-                '-scale 70%',
+                '-scale', '70%',
                 new_filename
             ])
             filename = new_filename
@@ -97,7 +97,7 @@ class Processor(object):
 def read_ini_sections(filename):
     if not os.path.exists(filename) and not filename.lower().endswith('.ini'):
         filename += '.ini'
-    from configparser import ConfigParser
-    config = ConfigParser()
-    config.read(filename)
-    return config.sections()
+    with open(filename, 'r') as f:
+        data = f.read()
+    import re
+    return re.findall('^\[(\w+)\]', data, re.MULTILINE)

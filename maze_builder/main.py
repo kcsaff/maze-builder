@@ -1,6 +1,11 @@
 import argparse
+import os.path
 from .processor import Processor
+import sys
 from collections import namedtuple
+
+
+POVRAY_INI = 'povray.ini'
 
 
 Settings = namedtuple(
@@ -13,11 +18,11 @@ defaults = Settings(
     config=None,
     verbose=0,
     keys=None,
-    pov=None,
+    pov='povray',  # This is correct on Linux anyway
     ini=None,
     include_path=None,
-    magick='convert',
-    tweet=False,
+    magick='convert',  # Generally correct
+    tweet=False,  # Misleading, change this
 )
 
 
@@ -57,6 +62,15 @@ parser.add_argument(
 )
 
 
+def _find_config(filename):
+    if os.path.exists(filename):
+        return os.path.abspath(filename)
+    candidate = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), filename)
+    if os.path.exists(candidate):
+        return os.path.abspath(candidate)
+    return None
+
+
 def main(args=None):
     # Rigamarole of loading args from config (if any) & setting as defaults
 
@@ -65,6 +79,11 @@ def main(args=None):
     if knargs.config:
         from .config import read_config
         args = args._replace(**vars(read_config(knargs.config)))
+
+    if not knargs.ini and not args.ini:
+        args = args._replace(ini=_find_config(POVRAY_INI))
+    if not knargs.ini and not args.ini:
+        args = args._replace(ini=_find_config(POVRAY_INI))
 
     parser.set_defaults(**vars(args))
     args = parser.parse_args()
