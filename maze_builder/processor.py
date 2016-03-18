@@ -68,7 +68,7 @@ class Processor(object):
         file_size = os.path.getsize(filename)
 
         attempt = 0
-        while filesize > TWITTER_FILESIZE_LIMIT and attempt < 5:
+        while file_size > TWITTER_FILESIZE_LIMIT and attempt < 5:
             if self.verbose:
                 print('Needs more jpeg...')
 
