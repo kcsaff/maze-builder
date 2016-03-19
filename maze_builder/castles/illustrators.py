@@ -17,6 +17,7 @@ def template(template_name, **kwargs):
 
 class TemplateIllustrator(object):
     def __init__(self, template):
+        self.template = template
         self.walls = list()
         self.features = list()
 
