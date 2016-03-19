@@ -2,6 +2,8 @@ import random
 import time
 import subprocess
 import os.path
+from .util import timed
+from .random2 import weighted_choice
 
 
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
@@ -14,20 +16,20 @@ clock = time.perf_counter
 
 
 class Processor(object):
-    def __init__(self, builder, args=None):
+    def __init__(self, builders, args=None):
         self.args = args
         self.verbose = args.verbose
-        self.builder = builder
+        self.builders = builders
 
     def start(self):
         if self.args.tweet:
-            self.tweet()
+            self.tweet(filename=OUT_FILENAME)
         else:
-            self.builder.build(self, self.verbose)
+            weighted_choice(self.builders).build(self, self.verbose)
 
     def process_pov(self, filename):
         if not self.args or not self.args.pov:
-            if self.verbose >= 2:
+            if self.verbose > 0:
                 print('No POV handler registered, pipeline stopping')
             return
 
@@ -62,22 +64,34 @@ class Processor(object):
             print('Maze rendered in {0:.3f}s'.format(elapsed))
 
         if self.args.keys:
-            self.tweet(OUT_FILENAME)
+            self.tweet(filename=OUT_FILENAME)
 
-    def tweet(self, filename=OUT_FILENAME):
+    def tweet(self, status=None, filename=None):
+        if not self.args or not self.args.keys:
+            if self.verbose > 0:
+                print('No twitter keys registered, pipeline stopping')
+            return
+
         from maze_builder.bot import bot
 
-        filename = self._resize(filename)
+        twitter = bot(self.args.keys)
 
-        started = clock()
-        if self.verbose:
-            print('Updating twitter status ({}kb)...'.format(os.path.getsize(filename) // 1024))
+        if status:
+            kwargs = dict(status=status)
 
-        bot(self.args.keys).update_with_media(filename)
+        if filename:
+            filename = self._resize(filename)
 
-        if self.verbose:
-            elapsed = clock() - started
-            print('Updated status in {0:.3f}s'.format(elapsed))
+            with timed(
+                self.verbose > 0,
+                'Updating twitter status ({}kb)...'.format(os.path.getsize(filename) // 1024),
+                'Updated status in {0:.3f}s'
+            ):
+                twitter.update_with_media(filename, **kwargs)
+        elif status:
+            twitter.update_status(**kwargs)
+        else:
+            raise RuntimeError('Tweet requires status or filename')
 
     def _resize(self, filename):
         if not self.args or not self.args.magick:
@@ -87,25 +101,18 @@ class Processor(object):
 
         attempt = 0
         while file_size > TWITTER_FILESIZE_LIMIT and attempt < 5:
-            started = clock()
-            if self.verbose:
-                print('Needs more jpeg...')
-
-            new_filename = JPG_FILENAME.format(attempt)
-            call_args = [
-                self.args.magick, filename,
-                '-define', 'jpeg:extent={}'.format(NEW_FILESIZE_LIMIT),
-            ]
-            if attempt > 0:
-                call_args.extend(['-scale', '70%'])
-            call_args.append(new_filename)
-            subprocess.check_call(call_args)
-            filename = new_filename
-            file_size = os.path.getsize(filename)
-
-            if self.verbose:
-                elapsed = clock() - started
-                print('Resized image in {0:.3f}s'.format(elapsed))
+            with timed(self.verbose > 0, 'Needs more jpeg...', 'Resized image in {0:.3f}s'):
+                new_filename = JPG_FILENAME.format(attempt)
+                call_args = [
+                    self.args.magick, filename,
+                    '-define', 'jpeg:extent={}'.format(NEW_FILESIZE_LIMIT),
+                ]
+                if attempt > 0:
+                    call_args.extend(['-scale', '70%'])
+                call_args.append(new_filename)
+                subprocess.check_call(call_args)
+                filename = new_filename
+                file_size = os.path.getsize(filename)
 
         return filename
 

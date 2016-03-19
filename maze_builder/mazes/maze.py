@@ -8,6 +8,21 @@ class Route(object):
         self.spaces = spaces if spaces is not None else len(rooms)
         self.data = data
 
+    def __repr__(self):
+        data = dict(self.data)
+        if self.spaces != len(self.rooms):
+            data.update(spaces=self.spaces)
+        return 'Route({}{})'.format(
+            self.rooms,
+            ''.join(
+                ', {}: {}'.format(*item) for item in sorted(data.items())
+            )
+        )
+
+    def __lt__(self, other):
+        """Only works if rooms support comparison"""
+        return self.rooms < other.rooms
+
 
 class Topology(object):
     def __init__(self, routes=()):
@@ -36,10 +51,9 @@ class Topology(object):
         routes = [self._internalize(route) for route in routes]
         self.teach(*routes)
         if all(self._check(route) for route in routes):
-            self.force(*routes)
-            return True
+            return self.force(*routes)
         else:
-            return False
+            return ()
 
     def force(self, *routes):
         routes = [self._internalize(route) for route in routes]
@@ -48,12 +62,19 @@ class Topology(object):
             if route not in self.active_routes:
                 self.active_routes.add(route)
                 self.join(route.rooms)
-
+        return routes
 
     def routes_connecting(self, rooms):
         for pair in itertools.combinations(rooms, 2):
             if pair in self.known_room_routes:
                 yield from self.known_room_routes[pair]
+
+    def any_active_route_connecting(self, rooms):
+        for route in self.routes_connecting(rooms):
+            if route in self.active_routes:
+                return route
+        else:
+            return None
 
     # Internal
 

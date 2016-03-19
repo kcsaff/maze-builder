@@ -112,7 +112,19 @@ def main(args=None):
         if executable and not shutil.which(executable):
             raise RuntimeError('Executable {} not found!'.format(executable))
 
-    from maze_builder.castles.builder import CastleBuilder
-    Processor(CastleBuilder(), args or parser.parse_args()).start()
+    # Make & run processor
 
+    from maze_builder.castles.builder import CastleBuilder
+    from maze_builder.castles.illustrators import TemplateIllustrator
+    from maze_builder.cubics.builders import UnicodeBuilder
+
+    processor = Processor({
+        CastleBuilder(TemplateIllustrator('evil.pov.jinja2')): 31,
+        CastleBuilder(TemplateIllustrator('fantasy.pov.jinja2')): 38,
+        CastleBuilder(TemplateIllustrator('escher.pov.jinja2')): 25,
+        CastleBuilder(TemplateIllustrator('brick.pov.jinja2')): 4,
+        CastleBuilder(TemplateIllustrator('pure.pov.jinja2')): 2,
+    }, args=args)
+
+    processor.start()
 

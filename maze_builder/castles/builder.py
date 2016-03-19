@@ -1,17 +1,14 @@
-import time
 from .features import *
 from .castle import *
-from .illustrators import WeightedTemplateIllustrator
-
-
-clock = time.perf_counter
+from maze_builder.util import timed
 
 
 POV_FILENAME = 'out.pov'
 
 
 class CastleBuilder(object):
-    def __init__(self, features=None, illustrator=None, castle_class=CastleTwoLevel):
+    def __init__(self, illustrator, features=None, castle_class=CastleTwoLevel):
+        self.illustrator = illustrator
         self.castle_class = castle_class
         if features is None:
             features = [
@@ -22,44 +19,21 @@ class CastleBuilder(object):
                 Stairs(0.05*4*random.random()*random.random())
             ]
         self.features = features
-        if illustrator is None:
-            illustrator = WeightedTemplateIllustrator({
-                    'evil.pov.jinja2':    31,
-                    'fantasy.pov.jinja2': 38,
-                    'escher.pov.jinja2':  25,
-                    'brick.pov.jinja2':    4,
-                    'pure.pov.jinja2':     2,
-            })
-        self.illustrator = illustrator
 
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
 
-        started = clock()
-        if verbose:
-            print('Generating castle...')
+        with timed(verbose > 0, 'Generating castle...', 'Castle generated in {0:.3f}s'):
+            castle = self.castle_class(
+                150, 150, verbose=verbose,
+                feature_factories=self.features
+            )
 
-        castle = self.castle_class(
-            100, 100, verbose=verbose,
-            feature_factories=self.features
-        )
-
-        if verbose:
-            elapsed = clock() - started
-            print('Castle generated in {0:.3f}s'.format(elapsed))
-
-        started = clock()
-        if verbose:
-            print('Writing castle...')
-
-        castle.draw(self.illustrator)
-        with open(filename, 'w') as f:
-            f.write(self.illustrator.make())
-        self.illustrator.reset()  # TODO: get rid of state here?
-
-        if verbose:
-            elapsed = clock() - started
-            print('Castle written in {0:.3f}s'.format(elapsed))
+        with timed(verbose > 0, 'Writing castle...', 'Castle written in {0:.3f}s'):
+            castle.draw(self.illustrator)
+            with open(filename, 'w') as f:
+                f.write(self.illustrator.make())
+            self.illustrator.reset()  # TODO: get rid of state here!
 
         if processor:
             processor.process_pov(filename)

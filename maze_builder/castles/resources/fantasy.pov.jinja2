@@ -215,9 +215,12 @@ plane { y, 0 texture { DefaultTexture } }
 #declare SpireDoorHeightTotal=SpireDoorHeight+WALL;
 
 #macro MakeSpireDoor(MaxSize)
-    union {
-        box { <-MaxSize, 0, -WALL>, <+MaxSize, +SpireDoorHeight, +WALL> }
-        cylinder { <-MaxSize, +SpireDoorHeight, 0>, <+MaxSize, +SpireDoorHeight, 0>, WALL }
+    difference {
+        union {
+            box { <-MaxSize, 0, -WALL>, <+MaxSize, +SpireDoorHeight, +WALL> }
+            cylinder { <-MaxSize, +SpireDoorHeight, 0>, <+MaxSize, +SpireDoorHeight, 0>, WALL }
+        }
+        box { <-WALL*0.1, -WALL*0.01, -WALL*1.01>, <+Wall*0.1, +SpireDoorHeightTotal*1.01, +WALL*1.01> }
     }
 #end
 

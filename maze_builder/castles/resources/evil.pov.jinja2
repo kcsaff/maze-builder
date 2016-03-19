@@ -144,6 +144,10 @@ plane { y, 0 texture { DefaultLava } }
 
 #end
 
+#macro MakeGoodLight(height, color)
+    // TODO: make "good" light
+#end
+
 #macro MakeSpire (X, Y, Z)
     #local spire = HEIGHT + 1.0 + 2*HEIGHT*rand(R1)*rand(R1)*rand(R1);
     superellipsoid {
@@ -156,19 +160,30 @@ plane { y, 0 texture { DefaultLava } }
         translate <X, Z, Y>
         texture { DefaultTexture }
     }
-    #if (rand(RT) < 0.5 & PowerOfEvil>0)
-    light_source {
-        0, color rgb <PowerOfEvil*rand(RT)+PowerOfGood*rand(RT), PowerOfGood*rand(RT), PowerOfGood*rand(RT)>
-        fade_distance 5
-        fade_power 2
-        looks_like { Evil }
-        translate <X, Z+spire, Y>
-    }
+    #local LightColor=rgb <PowerOfEvil*rand(RT)+PowerOfGood*rand(RT), PowerOfGood*rand(RT), PowerOfGood*rand(RT)>;
+    #if (rand(RT) < 0.5 & PowerOfEvil > 0)
+        light_source {
+            0, color LightColor
+            fade_distance 5
+            fade_power 2
+            looks_like {
+                #if (rand(R1) < 2 * PowerOfGood)
+                    MakeGoodLight(spire, LightColor)
+                #else
+                    Evil
+                #end
+            }
+            translate <X, Z+spire, Y>
+        }
     #else
-    object {
-        Evil
-        translate <X, Z+spire, Y>
-    }
+        object {
+            #if (rand(R1) < 2 * PowerOfGood)
+                MakeGoodLight(spire, LightColor)
+            #else
+                Evil
+            #end
+            translate <X, Z+spire, Y>
+        }
     #end
 
 #end

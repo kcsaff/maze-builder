@@ -15,10 +15,8 @@ def template(template_name, **kwargs):
     return jinja2.Template(resource(template_name)).render(**kwargs)
 
 
-class WeightedTemplateIllustrator(object):
-    def __init__(self, weighted_template_dict):
-        self.weighted_template_dict = weighted_template_dict
-
+class TemplateIllustrator(object):
+    def __init__(self, template):
         self.walls = list()
         self.features = list()
 
@@ -60,12 +58,9 @@ class WeightedTemplateIllustrator(object):
     def draw_feature(self, feature, x, y, z=0, *data):
         self.features.append((self.feature_map[feature], (x, y, z), data))
 
-    def _choose_template_name(self):
-        return weighted_choice(*zip(*self.weighted_template_dict.items()))
-
     def make(self):
         return template(
-            self._choose_template_name(),
+            self.template,
             walls=self.walls,
             features=self.features,
             seed=random.randint(1, 9999)

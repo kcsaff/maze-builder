@@ -1,7 +1,14 @@
 import random
+import collections
 
 
-def weighted_choice(choices, weights):
+def weighted_choice(choices, weights=None):
+    if weights is None:
+        if isinstance(choices, dict):
+            choices, weights = zip(*choices.items())
+        elif isinstance(choices, collections.Iterable):
+            weights = [1] * len(choices)
+
     # http://stackoverflow.com/a/17011134/1115497
     total = sum(weights)
     threshold = random.uniform(0, total)
