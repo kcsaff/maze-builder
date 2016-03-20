@@ -4,6 +4,7 @@ from .processor import Processor
 import sys
 from collections import namedtuple
 import shutil
+import random
 
 
 POVRAY_INI = 'povray.ini'
@@ -11,7 +12,7 @@ POVRAY_INI = 'povray.ini'
 
 Settings = namedtuple(
     'Settings',
-    ['config', 'verbose', 'keys', 'pov', 'ini', 'include_path', 'magick', 'tweet']
+    ['config', 'verbose', 'keys', 'pov', 'ini', 'include_path', 'magick', 'builder', 'tweet']
 )
 
 
@@ -23,6 +24,7 @@ DEFAULTS = Settings(
     ini=None,
     include_path=None,
     magick=None,
+    builder=None,
     tweet=False,  # Misleading, change this
 )
 
@@ -63,6 +65,11 @@ parser.add_argument(
     '--magick', '-M', type=str,
     help='ImageMagick command line tool',
 )
+parser.add_argument(
+    '--builder', '-b', type=str,
+    help='Force particular builder to be used',
+)
+
 parser.add_argument(
     '--tweet', '-T',
     action='store_true', default=False,
@@ -116,14 +123,15 @@ def main(args=None):
 
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
-    from maze_builder.cubics.builders import UnicodeBuilder
+    from maze_builder.cubics.builders import ImageBuilder, ImageBlockIllustrator
 
     processor = Processor({
-        CastleBuilder(TemplateIllustrator('evil.pov.jinja2')): 31,
-        CastleBuilder(TemplateIllustrator('fantasy.pov.jinja2')): 38,
-        CastleBuilder(TemplateIllustrator('escher.pov.jinja2')): 25,
-        CastleBuilder(TemplateIllustrator('brick.pov.jinja2')): 4,
-        CastleBuilder(TemplateIllustrator('pure.pov.jinja2')): 2,
+        CastleBuilder('evil', TemplateIllustrator('evil.pov.jinja2')): 31,
+        CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 38,
+        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 25,
+        CastleBuilder('brick', TemplateIllustrator('brick.pov.jinja2')): 4,
+        CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 2,
+        ImageBuilder('bw2d', 506, 253): 15,
     }, args=args)
 
     processor.start()

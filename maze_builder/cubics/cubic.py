@@ -109,7 +109,6 @@ class Cubic(object):
         return self.topology.any_active_route_connecting(self.get_room(c, make=False) for c in coords_list)
 
     def make_route(self, coords_list):
-        # print(coords_list)
         rooms = [self.get_room(coords) for coords in coords_list]
         if len(rooms) >= 2:
             return Route(rooms)
@@ -119,13 +118,12 @@ class Cubic(object):
     def offer_route(self, *routes):
         success = False
         for route in self.topology.offer(*routes):
-            print(route)
             success = True
             route.rooms[0].exits.add(route)
             route.rooms[-1].entrances.add(route)
         return success
 
-    def prepare(self, x, y, z, origin=(0, 0, 0)):
+    def prepare(self, x, y, z=1, origin=(0, 0, 0)):
         ox, oy, oz = origin
 
         for i in range(x):

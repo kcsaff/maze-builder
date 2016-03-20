@@ -7,7 +7,8 @@ POV_FILENAME = 'out.pov'
 
 
 class CastleBuilder(object):
-    def __init__(self, illustrator, features=None, castle_class=CastleTwoLevel):
+    def __init__(self, name, illustrator, features=None, castle_class=CastleTwoLevel):
+        self.name = name
         self.illustrator = illustrator
         self.castle_class = castle_class
         if features is None:

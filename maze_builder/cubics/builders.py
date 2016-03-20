@@ -8,8 +8,12 @@ from .illustrators import *
 POV_FILENAME = 'out.pov'
 
 
+PNG_FILENAME = 'out.png'
+
+
 class UnicodeBuilder(object):
-    def __init__(self, width, height=None, illustrator=UnicodeFullBlockIllustrator()):
+    def __init__(self, name, width, height=None, illustrator=UnicodeFullBlockIllustrator()):
+        self.name = name
         self.width = width
         self.height = height or width
         self.illustrator = illustrator
@@ -35,9 +39,31 @@ class UnicodeBuilder(object):
         return data
 
 
+class ImageBuilder(object):
+    def __init__(self, name, width, height=None, illustrator=ImageBlockIllustrator()):
+        self.name = name
+        self.width = width
+        self.height = height
+        self.illustrator = illustrator
+
+    def build(self, processor, verbose=0, filename=PNG_FILENAME):
+        # Generate maze
+
+        with timed(verbose > 0, 'Generating maze image...', 'Maze image generated in {0:.3f}s'):
+            maze = Cubic().prepare((self.width-1)//2, (self.height-1)//2).fill()
+
+        with timed(verbose > 0, 'Writing maze image...', 'Maze image written in {0:.3f}s'):
+            image = self.illustrator.draw(maze)
+            image.save(filename)
+
+        if processor:
+            processor.tweet(filename=filename)
+
+
 class SatelliteBuilder(object):
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.illustrator = TemplateIllustrator()
 
     def build(self, processor, verbose=0, filename=POV_FILENAME):

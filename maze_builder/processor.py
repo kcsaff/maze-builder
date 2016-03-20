@@ -20,10 +20,17 @@ class Processor(object):
         self.args = args
         self.verbose = args.verbose
         self.builders = builders
+        self.builders_by_name = {
+            builder.name: builder
+            for builder in builders
+            if getattr(builder, 'name', None)
+        }
 
     def start(self):
         if self.args.tweet:
             self.tweet(filename=OUT_FILENAME)
+        elif self.args.builder:
+            self.builders_by_name[self.args.builder].build(self, self.verbose)
         else:
             weighted_choice(self.builders).build(self, self.verbose)
 

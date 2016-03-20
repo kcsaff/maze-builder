@@ -1,8 +1,10 @@
 import pkgutil
 import jinja2
 import random
-import string
+from maze_builder.emoji import FEATURE_SETS
 from maze_builder.random2 import weighted_choice
+from PIL import Image
+from PIL import ImageColor
 
 
 RESOURCE_PACKAGE = 'maze_builder.satellites.resources'
@@ -25,59 +27,6 @@ class TemplateIllustrator(object):
             self.template,
             connections=cubic.topology.active_routes,
         )
-
-
-HAPPY_FACES = ''.join(
-    [chr(x) for x in range(0x1f600, 0x1f608)]
-    + [chr(x) for x in range(0x1f609, 0x1f60c)]
-    + ['\U0001f60e\u263a\U0001f642\U0001f917\U0001f913\U0001f60c\U0001f61b\U0001f61c\U0001f61d\U0001f643']
-    + ['\U0001f911']
-)
-
-LOVE_FACES = ''.join(
-    ['\U0001f60d\U0001f633']
-    + [chr(x) for x in range(0x1f617, 0x1f61b)]
-)
-
-NEUTRAL_FACES = ''.join(
-    ['\U0001f914\U0001f610\U0001f611\U0001f636\U0001f644\U0001f60f\U0001f62a\U0001f634\U0001f612\U0001f614']
-)
-
-SAD_FACES = ''.join(
-    ['\U0001f623\u2639\U0001f641\U0001f616\U0001f61e\U0001f622\U0001f62d\U0001f629']
-)
-
-SCARED_FACES = ''.join(
-    ['\U0001f62e\U0001f910\U0001f625\U0001f62f\U0001f62b\U0001f613\U0001f615\U0001f632\U0001f61f\U0001f627\U0001f628']
-    + ['\U0001f630\U0001f631\U0001f635']
-)
-
-SICK_FACES = ''.join(
-    ['\U0001f637\U0001f912\U0001f915']
-)
-
-ANGRY_FACES = ''.join(
-    ['\U0001f624\U0001f62c\U0001f621\U0001f620']
-)
-
-MONSTER_FACES = ''.join(
-    ['\U0001f608\U0001f47f\U0001f479\U0001f47a']
-)
-
-DEAD_THINGS = ''.join(
-    ['\U0001f480\u2620\U0001f47b']
-)
-
-SCIFI_FACES = ''.join(
-    ['\U0001f47d\U0001f47e\U0001f916']
-)
-
-FEATURE_SETS = {
-    string.ascii_uppercase: 100,
-    string.digits: 100,
-    NEUTRAL_FACES: 100,
-    SCARED_FACES: 100,
-}
 
 
 class UnicodeQuarterBlockIllustrator(object):
@@ -130,24 +79,14 @@ class UnicodeQuarterBlockIllustrator(object):
         return self.newline.join(self.charsep.join(line) for line in lines)
 
 
-class UnicodeFullBlockIllustrator(object):
-    WIDE_SPACE = '\u3000'
-    THIN_SPACE = ' '
-    BLOCKS = ''.join([
-             '▖', '▗', '▄',
-        '▝', '▞', '▐', '▟',
-        '▘', '▌', '▚', '▙',
-        '▀', '▛', '▜', '█',
-    ])
-    SPACES = THIN_SPACE
-    BLOCKS = '█'
-
-    def __init__(self, blocks=None, spaces=None, newline='\n', charsep='', feature_sets=None, margin=2):
-        self.blocks = blocks or self.BLOCKS
-        self.spaces = spaces or self.SPACES
-        self.charsep = charsep
-        self.newline = newline
-        self.feature_sets = feature_sets or FEATURE_SETS
+class BlockIllustratorBase(object):
+    def __init__(self, junctions=[1], rooms=[0], xwalls=None, ywalls=None, xhalls=None, yhalls=None, margin=0):
+        self.junctions = junctions
+        self.rooms = rooms
+        self.xwalls = xwalls or junctions
+        self.ywalls = ywalls or junctions
+        self.xhalls = xhalls or rooms
+        self.yhalls = yhalls or rooms
         self.margin = margin
 
     def draw(self, cubic):
@@ -158,21 +97,70 @@ class UnicodeFullBlockIllustrator(object):
         z = cubic.maxz
         if cubic.maxz != cubic.minz:
             raise RuntimeError('I can only draw 2D images')
-        lines = [[weighted_choice(self.blocks) for _ in range(2*width+1)] for _ in range(2*height+1)]
+        rows = [[None for _ in range(2*width+1)] for _ in range(2*height+1)]
 
+        # Boundaries (left & top)
+        for i in range(width):
+            rows[0][i*2+1] = weighted_choice(self.xwalls)
+        for j in range(height):
+            rows[j*2+1][0] = weighted_choice(self.ywalls)
+
+        # Junctions everywhere
+        for i in range(width+1):
+            for j in range(height+1):
+                rows[j*2][i*2] = weighted_choice(self.junctions)
+
+        # Rooms and halls
         for i in range(width):
             x = ox + i
             for j in range(height):
                 y = oy + j
-                lines[j*2+1][i*2+1] = weighted_choice(self.spaces)
-                if cubic.any_active_route_connecting((x, y, z), (x, y+1, z)):
-                    lines[j*2+2][i*2+1] = weighted_choice(self.spaces)
-                if cubic.any_active_route_connecting((x, y, z), (x+1, y, z)):
-                    lines[j*2+1][i*2+2] = weighted_choice(self.spaces)
+                rows[j*2+1][i*2+1] = weighted_choice(self.rooms)
 
+                if cubic.any_active_route_connecting((x, y, z), (x+1, y, z)):
+                    rows[j*2+1][i*2+2] = weighted_choice(self.xhalls)
+                else:
+                    rows[j*2+1][i*2+2] = weighted_choice(self.ywalls)
+
+                if cubic.any_active_route_connecting((x, y, z), (x, y+1, z)):
+                    rows[j*2+2][i*2+1] = weighted_choice(self.yhalls)
+                else:
+                    rows[j*2+2][i*2+1] = weighted_choice(self.xwalls)
+
+        if self.margin:
+            return [line[self.margin:-self.margin] for line in rows[self.margin:-self.margin]]
+        else:
+            return rows
+
+
+class ImageBlockIllustrator(BlockIllustratorBase):
+    def __init__(self, wall_colors=[(0,0,0)], hall_colors=[(255,255,255)]):
+        super().__init__(wall_colors, hall_colors)
+
+    def draw(self, cubic):
+        data = super().draw(cubic)
+        image = Image.new('RGB', (len(data[0]), len(data)))
+        image.putdata(sum(data, []))
+        return image
+
+
+class UnicodeFullBlockIllustrator(BlockIllustratorBase):
+    WIDE_SPACE = '\u3000'
+    THIN_SPACE = ' '
+    SPACES = THIN_SPACE
+    BLOCKS = '█'
+
+    def __init__(self, blocks=None, spaces=None, newline='\n', charsep='', margin=2):
+        super().__init__(
+            junctions=blocks or self.BLOCKS,
+            rooms=spaces or self.SPACES,
+            margin=margin
+        )
+
+    def draw(self, cubic):
         return self.newline.join(
-            self.charsep.join(line[self.margin:-self.margin])
-            for line in lines[self.margin:-self.margin]
+            self.charsep.join(line)
+            for line in super().draw(cubic)
         )
 
 
