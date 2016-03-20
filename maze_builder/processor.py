@@ -1,5 +1,4 @@
 import random
-import time
 import subprocess
 import os.path
 from .util import timed
@@ -12,13 +11,11 @@ OUT_FILENAME = 'out.png'
 JPG_FILENAME = 'out{}.jpg'
 
 
-clock = time.perf_counter
-
-
 class Processor(object):
-    def __init__(self, builders, args=None):
+    def __init__(self, builders, default_status=None, args=None):
         self.args = args
         self.verbose = args.verbose
+        self.default_status = default_status
         self.builders = builders
         self.builders_by_name = {
             builder.name: builder
@@ -60,20 +57,16 @@ class Processor(object):
             '-P', '-D', '-V', '+FN8'
         ])
 
-        started = clock()
-        if self.verbose:
-            print('Rendering maze...')
-
-        subprocess.check_call(pov_args)
-
-        if self.verbose:
-            elapsed = clock() - started
-            print('Maze rendered in {0:.3f}s'.format(elapsed))
+        with timed(self.verbose, 'Rendering maze...', 'Maze rendered in {0:.3f}s'):
+            subprocess.check_call(pov_args)
 
         if self.args.keys:
             self.tweet(filename=OUT_FILENAME)
 
     def tweet(self, status=None, filename=None):
+        if status is None and self.default_status is not None:
+            status = self.default_status() if callable(self.default_status) else self.default_status
+
         if not self.args or not self.args.keys:
             if self.verbose > 0:
                 print('No twitter keys registered, pipeline stopping')

@@ -9,6 +9,8 @@ def weighted_choice(choices, weights=None):
         elif isinstance(choices, collections.Iterable):
             weights = [1] * len(choices)
 
+    weights = [weight() if callable(weight) else weight for weight in weights]
+
     # http://stackoverflow.com/a/17011134/1115497
     total = sum(weights)
     threshold = random.uniform(0, total)
