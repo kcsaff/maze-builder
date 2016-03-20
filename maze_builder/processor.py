@@ -85,6 +85,8 @@ class Processor(object):
 
         if status:
             kwargs = dict(status=status)
+        else:
+            kwargs = dict()
 
         if filename:
             filename = self._resize(filename)

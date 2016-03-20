@@ -5,3 +5,6 @@ config.txt
 *.egg-info
 venv
 *.pyc
+out*.pov
+out*.png
+out*.jpg
