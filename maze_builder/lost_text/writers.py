@@ -79,8 +79,8 @@ INVERTED_PUNCTUATION = {
 }
 
 STRIKES = {
-    '\u0336': 10, # Long horiz stroke
-    '\u0338': 5, # Tall angled stroke
+    '\u0336': 20, # Long horiz stroke
+    '\u0338': 6, # Tall angled stroke
     '\u0337': 3, # Short angled stroke
     '\u0335': 1, # Short horiz stroke
 }
@@ -248,6 +248,13 @@ NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'icky': 1,
 }
 
+GREAT_PAINS = {
+    'diarrhea': 10,
+    'pain': 10,
+    'hurts': 10,
+    'giardia': 1,
+}
+
 INTENSIFIERS = {
     'awfully {}': 1,
     'amazingly {}': 1,
@@ -341,6 +348,12 @@ LOST_SENTENCES = {
     "I can't understand it.": 1,
     "I don't get it.": 1,
     "Is this progress?": 1,
+    "Off the map.": 1,
+    "That's not on my map!": 1,
+    "Ask for directions? I wish I could.": 1,
+    "I feel I've been here all my life.": 1,
+    "I wonder if anyone remembers me.": 1,
+    "I called down each passage -- but got no response.": 1,
 }
 
 DIRECTIONS = {
@@ -390,18 +403,21 @@ DIRECTIONLESS_SENTENCES = { # North, south, up, down, etc.
     "If only the way {} were marked somehow!": 1,
     "If only I could find the way {}!": 1,
     "I thought I knew the way {}!": 1,
-    "I wish I'd written the way {}!": 1,
+    "I wish I'd mapped the way {}!": 1,
     "I once learned how to find the way {} -- but I've forgotten.": 1,
+    "I thought I knew the way {} -- did I forget?": 1,
 }
 
 ROOM_SENTENCES = {
     "A {}.": 15,
+    "{}.": 5,
     "Another {}.": 8,
     "I'll stay in this {} a while.": 1,
     "Should I spend the night in this {}?": 1,
     "I awoke in this {}.": 1,
     "Yet another {}.": 3,
-    "I tire of coming across another {}.": 1,
+    "I tire of coming across another {}.": 0.5,
+    "Not another {}!": 1,
     "I find myself in a {}.": 1,
     "Setting up camp in this {}.": 1,
     "Taking a break in this {}.": 1,
@@ -409,6 +425,8 @@ ROOM_SENTENCES = {
     "Searched a {}.": 1,
     "Found a {}.": 1,
     "Claiming this {}.": 1,
+    "I remember this {}.": 1,
+    "This {} again?": 1,
     "Fell into a {}.": 1,
     "Lunched in a {}.": 1,
     "Snacking in a {}.": 1,
@@ -451,6 +469,8 @@ GENERIC_ROOM_TYPES = {
     'area': 10,
     'lobby': 2,
     'entry': 2,
+    'hole': 1,
+    'maze': 1,
     'entranceway': 5,
 }
 
@@ -635,7 +655,13 @@ class LostTextWriter(object):
         return text + weighted_choice(LOST_SENTENCES) + ' '
 
     def directionless_sentence(self, text):
-        return text + _fix_sentence(weighted_choice(DIRECTIONLESS_SENTENCES).format(weighted_choice(DIRECTIONS))) + ' '
+        sentence = _fix_sentence(weighted_choice(DIRECTIONLESS_SENTENCES).format(weighted_choice(DIRECTIONS)))
+        if random.random() < 0.2:
+            if random.random() < 0.2:
+                sentence = strike(sentence)
+            else:
+                sentence = strike(sentence[:int((0.2 + 0.8*random.random())*(1+len(sentence)))])
+        return text + sentence + ' '
 
     def _exclaim(self, text):
         exclamation, punctuation = weighted_choice(EXCLAMATIONS)
@@ -670,6 +696,6 @@ class LostTextWriter(object):
 
 
 if __name__ == '__main__':
-    for i in range(20):
+    for i in range(24):
         print(LostTextWriter().write())
 
