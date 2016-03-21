@@ -145,8 +145,17 @@ plane { y, 0 texture { DefaultLava } }
 #end
 
 #macro MakeGoodLight(height, col)
-    // TODO: make "good" light
-    box { <0, -100, 0>, <0, -100.1, 0> }
+    // TODO: make "good" light stand
+    superellipsoid {
+        <3, 3>
+        scale (0.25+0.75*rand(RT))
+        rotate <90*rand(RT), 0, 0>
+        rotate <0, 90*rand(RT), 0>
+        rotate <0, 0, 90*rand(RT)>
+        translate <0, height, 0>
+        pigment { color col }
+        finish { ambient (rand(RT)) }
+    }
 #end
 
 #macro MakeSpire (X, Y, Z)
