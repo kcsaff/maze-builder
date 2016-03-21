@@ -22,7 +22,18 @@ camera {
     focal_point <3, 3, 3>
     aperture 30*rand(RT)
 }
-light_source { <-30, 200, 140> color White }
+
+light_source {
+    <-30, 200, 140>
+#if (rand(RT) < 0.5)
+    color White
+#else
+    color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
+#end
+    rotate <-15+30*rand(R1), 0, 0>
+    rotate <0, 0, -15+30*rand(R1)>
+    rotate <0, 360*rand(R1), 0>
+}
 
 global_settings {
     assumed_gamma 1.0
