@@ -588,28 +588,30 @@ class LostTextWriter(object):
 
     def intro_day_slightly_confused(self, text):
         day_formats = {
-            'Day {}?': 40,
-            'Is it day {}?': 4,
-            'Day {}, I think.': 1,
-            'Day {}, if I\'m correct.': 1,
-            'Day {}, I believe.': 1,
-            'Pretty sure this is day {}.': 1,
-            'Day {} still?': 1,
-            'Day {}, I hope.': 1,
+            'Day {}?'.format: 20,
+            'Is it day {}?'.format: 5,
+            'Day {}, I think.'.format: 2,
+            'Day {}, if I\'m correct.'.format: 1,
+            'Day {}, I believe.'.format: 1,
+            'Pretty sure this is day {}.'.format: 1,
+            'Day {} still?'.format: 1,
+            'Day {}, I hope.'.format: 1,
+            (lambda x: strike('Day {}.'.format(x))): 1,
         }
         number = day() + random.choice([-2, -1, -1, 0, 0, 0, 1, 1, +2])
-        return text + weighted_choice(day_formats).format(number) + ' '
+        return text + weighted_choice(day_formats)(number) + ' '
 
     def intro_day_moderately_confused(self, text):
         day_formats = {
-            'Day {} -- or is it {}?': 1,
-            'Day {} -- or {}?': 5,
-            'Day {} or {}.': 1,
-            'Day {1}, or possibly {0}.': 1,
-            'Day {}, or {} -- something like that.': 1,
+            'Day {} -- or is it {}?'.format: 1,
+            'Day {} -- or {}?'.format: 5,
+            'Day {} or {}.'.format: 1,
+            'Day {1}, or possibly {0}.'.format: 1,
+            'Day {}, or {} -- something like that.'.format: 1,
+            (lambda x, y: 'Day {} {}.'.format(strike(x), y)): 1,
         }
         number = day() + random.randint(-2, +1)
-        return text + weighted_choice(day_formats).format(number, number+1) + ' '
+        return text + weighted_choice(day_formats)(number, number+1) + ' '
 
     def intro_day_very_confused(self, text):
         day_formats = {
@@ -629,6 +631,7 @@ class LostTextWriter(object):
             'Another day.': 1,
             'The days fade into each other.': 1,
             'The days -- they\'re all the same.': 1,
+            strike('Day'): 1,
         }
         return text + weighted_choice(day_formats) + ' '
 
