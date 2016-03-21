@@ -1,0 +1,252 @@
+#version 3.7;
+#include "colors.inc"
+#include "stones1.inc"
+#include "stones2.inc"
+#include "textures.inc"
+
+#declare RT=seed({{ seed }});
+#declare R1=seed({{ seed }} + 1);
+#declare WALL=0.03 + rand(RT)*0.08;
+#declare HALL=1-2*WALL;
+
+background { color Black }
+camera {
+    right x*image_width/image_height // Square pixels
+    location <4+4*rand(RT), 4+4*rand(RT), 4+4*rand(RT)>
+    look_at  <0, 0, 0>
+    rotate <-180+360*rand(R1), 0, 0>
+    rotate <0, 0, -180+360*rand(R1)>
+    rotate <0, -180+360*rand(R1), 0>
+    look_at  <0, 0, 0>
+}
+
+#if (rand(RT) < 0.7)
+sky_sphere {
+    pigment {
+        bozo
+        color_map {
+            [0.0 White*3]
+            [0.05+0.2*rand(RT) Black]
+            [1.0 Black]
+        }
+        scale .006
+    }
+}
+#end
+
+light_source {
+    <-30, 200, 140>
+#if (rand(RT) < 0.7)
+    color White
+#else
+    color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
+#end
+    rotate <-180+360*rand(R1), 0, 0>
+    rotate <0, 0, -180+360*rand(R1)>
+    rotate <0, -180+360*rand(R1), 0>
+}
+
+{% for i in range(8) %}
+#if (rand(RT) < 0.40)
+    light_source {
+    <-4+8*rand(RT),-4+8*rand(RT),-4+8*rand(RT)>
+    #if (rand(RT) < 0.2)
+        color White
+    #else
+        color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
+    #end
+    fade_distance 5
+    fade_power 2
+    }
+#end
+{% endfor %}
+
+global_settings {
+    assumed_gamma 1.0
+    radiosity {
+      pretrace_start 0.08
+      pretrace_end   0.01
+      count 150
+      nearest_count 10
+      error_bound 0.5
+      recursion_limit 3
+      low_error_factor 0.5
+      gray_threshold 0.0
+      minimum_reuse 0.005
+      maximum_reuse 0.2
+      brightness 1
+      adc_bailout 0.005
+    }
+  }
+
+#declare MinBoulderWidth=0.03;
+#declare MaxBoulderWidth=0.1+0.3*rand(RT);
+
+#declare MinBoulderBaseWidth=0.03;
+#declare MaxBoulderBaseWidth=0.10+0.10*rand(RT);
+
+#macro MakeBoulder()
+    box {
+        <-1,-1,-1>, <1,1,1>
+        scale <
+            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+        >
+    }
+#end
+
+#macro MakeBoulderBase(xd, yd, zd)
+    box {
+        <
+            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+        >,
+        <
+            xd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            zd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
+            yd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+        >
+    }
+#end
+
+#macro MakeTexture1()
+    #if (rand(R1) < 0.5)
+        #if (rand(R1) < 0.5)
+            texture {Brushed_Aluminum scale 0.1}
+        #else
+            texture {Chrome_Metal scale 0.1}
+        #end
+    #else
+        #if (rand(R1) < 0.5)
+            texture {Silver_Metal scale 0.1}
+        #else
+            texture {Silver1 scale 0.1}
+        #end
+    #end
+#end
+
+#macro MakeTexture2()
+    #if (rand(R1) < 0.5)
+        #if (rand(R1) < 0.5)
+            texture {Spun_Brass scale 0.1}
+        #else
+            texture {New_Penny scale 0.1}
+        #end
+    #else
+        #if (rand(R1) < 0.5)
+            texture {Gold_Nugget scale 0.1}
+        #else
+            texture {Brass_Valley scale 0.1}
+        #end
+    #end
+#end
+
+#macro MakeTexture3()
+    #if (rand(R1) < 0.5)
+        #if (rand(R1) < 0.5)
+            texture {Copper_Metal scale 0.1}
+        #else
+            texture {Gold_Metal scale 0.1}
+        #end
+    #else
+        #if (rand(R1) < 0.5)
+            texture {New_Brass scale 0.1}
+        #else
+            texture {New_Penny scale 0.1}
+        #end
+    #end
+#end
+
+#macro MakeTexture4()
+    #if (rand(R1) < 0.5)
+        #if (rand(R1) < 0.5)
+            texture {Rust scale 0.1}
+        #else
+            texture {Polished_Chrome scale 0.1}
+        #end
+    #else
+        #if (rand(R1) < 0.5)
+            texture {Bright_Bronze scale 0.1}
+        #else
+            texture {Bronze_Metal scale 0.1}
+        #end
+    #end
+#end
+
+#macro MakeTexture12()
+    #if (rand(R1) < 0.5)
+        MakeTexture1()
+    #else
+        MakeTexture2()
+    #end
+#end
+
+#macro MakeTexture34()
+    #if (rand(R1) < 0.5)
+        MakeTexture3()
+    #else
+        MakeTexture4()
+    #end
+#end
+
+#macro MakeTexture1234()
+    #if (rand(R1) < 0.5)
+        MakeTexture12()
+    #else
+        MakeTexture34()
+    #end
+#end
+
+#if (rand(RT) < 0.5)
+    #macro MakeTexture()
+        MakeTexture1()
+    #end
+#else
+    #if (rand(RT) < 0.33)
+        #macro MakeTexture()
+            MakeTexture12()
+        #end
+    #else
+        #if (rand(RT) < 0.50)
+            #macro MakeTexture()
+                MakeTexture34()
+            #end
+        #else
+            #macro MakeTexture()
+                MakeTexture1234()
+            #end
+        #end
+    #end
+#end
+
+{% for connection in connections -%}
+    {% set x0 = connection.rooms[0].x %}
+    {% set x1 = connection.rooms[1].x %}
+    {% set xc = (x1 + x0)/2 %}
+    {% set xd = x1 - x0 %}
+    {% set y0 = connection.rooms[0].y %}
+    {% set y1 = connection.rooms[1].y %}
+    {% set yd = y1 - y0 %}
+    {% set yc = (y1 + y0)/2 %}
+    {% set z0 = connection.rooms[0].z %}
+    {% set z1 = connection.rooms[1].z %}
+    {% set zd = z1 - z0 %}
+    {% set zc = (z1 + z0)/2 %}
+    object {
+        MakeBoulderBase({{ xd }}, {{ yd }}, {{ zd }})
+        translate <+{{ x0 }}, +{{ z0 }}, +{{ y0 }}>
+        MakeTexture()
+    }
+    {% for i in range(8) %}
+        object {
+            MakeBoulder()
+            translate <
+                {{ x0 }}-WALL+rand(R1)*({{ xd }}+2*WALL),
+                {{ z0 }}-WALL+rand(R1)*({{ zd }}+2*WALL),
+                {{ y0 }}-WALL+rand(R1)*({{ yd }}+2*WALL)>
+            MakeTexture()
+        }
+    {% endfor %}
+{% endfor %}
