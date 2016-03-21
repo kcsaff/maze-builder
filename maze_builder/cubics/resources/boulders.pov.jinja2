@@ -25,7 +25,7 @@ light_source {
     color White
 #else
     color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
-#endif
+#end
 }
 
 global_settings {
@@ -230,14 +230,20 @@ plane { y, 0
 }
 
 {% for wall in walls -%}
-    {% set x0 = wall.rooms[0].x %}
-    {% set x1 = wall.rooms[1].x %}
-    {% set xc = (x1 + x0)/2 %}
-    {% set xd = x1 - x0 %}
-    {% set y0 = wall.rooms[0].y %}
-    {% set y1 = wall.rooms[1].y %}
-    {% set yd = y1 - y0 %}
-    {% set yc = (y1 + y0)/2 %}
+    {%- set x0 = wall.rooms[0].x -%}
+    {%- set x1 = wall.rooms[1].x -%}
+    {%- if x1 < x0 -%}
+        {%- set x0, x1 = x1, x0 -%}
+    {%- endif -%}
+    {%- set xc = (x1 + x0)/2 -%}
+    {%- set xd = x1 - x0 -%}
+    {%- set y0 = wall.rooms[0].y -%}
+    {%- set y1 = wall.rooms[1].y -%}
+    {%- if y1 < y0 -%}
+        {%- set y0, y1 = y1, y0 -%}
+    {%- endif -%}
+    {%- set yd = y1 - y0 -%}
+    {%- set yc = (y1 + y0)/2 -%}
     object {
         MakeBoulderBase({{ xd }}, {{ yd }})
         rotate <0, 85+rand(R1)*10, 0>

@@ -28,7 +28,7 @@ class CubicTemplateIllustrator(object):
             connections=cubic.topology.active_routes,
             walls=cubic.topology.inactive_routes(),
             center=cubic.center(),
-            seed=random.random(),
+            seed=random.randint(1, 30000),
         )
 
 

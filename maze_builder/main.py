@@ -146,6 +146,7 @@ def main(args=None):
             ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
         ), 'multiply'): 19,
         CubicPovBuilder('boulders', CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 20,
+        CubicPovBuilder('simple3d', CubicTemplateIllustrator('warptest.pov.jinja2'), 50): 20,
         CubicPovBuilder('borg', CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 15,
         SeededPovBuilder('borg2', CubicTemplateIllustrator('borg.pov.jinja2')): 10,
     },

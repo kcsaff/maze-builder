@@ -79,34 +79,34 @@ global_settings {
     }
   }
 
-#declare MinBoulderWidth=0.03;
-#declare MaxBoulderWidth=0.1+0.3*rand(RT);
+#declare MinBorgWidth=0.03;
+#declare MaxBorgWidth=0.1+0.3*rand(RT);
 
-#declare MinBoulderBaseWidth=0.03;
-#declare MaxBoulderBaseWidth=0.10+0.10*rand(RT);
+#declare MinBorgBaseWidth=0.03;
+#declare MaxBorgBaseWidth=0.10+0.10*rand(RT);
 
-#macro MakeBoulder()
+#macro MakeBorg()
     box {
         <-1,-1,-1>, <1,1,1>
         scale <
-            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+            MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth)
         >
     }
 #end
 
-#macro MakeBoulderBase(xd, yd, zd)
+#macro MakeBorgBase(xd, yd, zd)
     box {
         <
-            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            -MinBoulderWidth-rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+            -MinBorgWidth-rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            -MinBorgWidth-rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            -MinBorgWidth-rand(R1)*(MaxBorgWidth-MinBorgWidth)
         >,
         <
-            xd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            zd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth),
-            yd+MinBoulderWidth+rand(R1)*(MaxBoulderWidth-MinBoulderWidth)
+            xd+MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            zd+MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth),
+            yd+MinBorgWidth+rand(R1)*(MaxBorgWidth-MinBorgWidth)
         >
     }
 #end
@@ -222,26 +222,35 @@ global_settings {
 #end
 
 {% for connection in connections -%}
-    {% set x0 = connection.rooms[0].x %}
-    {% set x1 = connection.rooms[1].x %}
-    {% set xc = (x1 + x0)/2 %}
-    {% set xd = x1 - x0 %}
-    {% set y0 = connection.rooms[0].y %}
-    {% set y1 = connection.rooms[1].y %}
-    {% set yd = y1 - y0 %}
-    {% set yc = (y1 + y0)/2 %}
+    {%- set x0 = connection.rooms[0].x -%}
+    {%- set x1 = connection.rooms[1].x -%}
+    {%- if x1 < x0 -%}
+        {%- set x0, x1 = x1, x0 -%}
+    {%- endif -%}
+    {%- set xc = (x1 + x0)/2 -%}
+    {%- set xd = x1 - x0 -%}
+    {%- set y0 = connection.rooms[0].y -%}
+    {%- set y1 = connection.rooms[1].y -%}
+    {%- if y1 < y0 -%}
+        {%- set y0, y1 = y1, y0 -%}
+    {%- endif -%}
+    {%- set yd = y1 - y0 -%}
+    {%- set yc = (y1 + y0)/2 -%}
     {% set z0 = connection.rooms[0].z %}
     {% set z1 = connection.rooms[1].z %}
+    {%- if z1 < z0 -%}
+        {%- set z0, z1 = z1, z0 -%}
+    {%- endif -%}
     {% set zd = z1 - z0 %}
     {% set zc = (z1 + z0)/2 %}
     object {
-        MakeBoulderBase({{ xd }}, {{ yd }}, {{ zd }})
+        MakeBorgBase({{ xd }}, {{ yd }}, {{ zd }})
         translate <+{{ x0 }}, +{{ z0 }}, +{{ y0 }}>
         MakeTexture()
     }
     {% for i in range(8) %}
         object {
-            MakeBoulder()
+            MakeBorg()
             translate <
                 {{ x0 }}-WALL+rand(R1)*({{ xd }}+2*WALL),
                 {{ z0 }}-WALL+rand(R1)*({{ zd }}+2*WALL),
