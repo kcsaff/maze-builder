@@ -166,6 +166,7 @@ NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'numbed': 1,
     'benumbed': 1,
     'thirsty': 1,
+    'parched': 1,
     'injured': 10,
     'afraid': 1,
     'terrified': 1,
@@ -187,6 +188,19 @@ NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'scared to death': 1,
     'terror-stricken': 1,
     'humbled': 1,
+    'dead': 1,
+    'naked': 1,
+    'wild': 1,
+    'uncivilized': 1,
+    'scorched': 1,
+    'withered': 1,
+    'sunburned': 1,
+    'windburned': 1,
+    'frostbitten': 1,
+    'dehydrated': 1,
+    'shriveled': 1,
+    'dried up': 1,
+    'dried out': 1,
 }
 
 INTENSIFIERS = {
@@ -249,7 +263,6 @@ NEGATIVE_SENTENCES = {
     'Would I have come this way, if I\'d known I\'d be so {}?': 1,
 }
 
-
 LOST_SENTENCES = {
     "Am I going in circles?": 1,
     "It's impossible to guess which way to go.": 1,
@@ -293,6 +306,9 @@ DIRECTIONS = {
     'up': 10,
     'down': 10,
     'around': 10,
+    'forward': 5,
+    'back': 5,
+    'backward': 1,
     'over': 5,
     'under': 5,
     'through': 5,
@@ -307,6 +323,8 @@ DIRECTIONS = {
 }
 
 DIRECTIONLESS_SENTENCES = { # North, south, up, down, etc.
+    "{}.": 1,
+    "{} again?": 1,
     "Which way is {}?": 1,
     "Is there a way {}?": 1,
     "Can I find a way {}?": 1,
@@ -321,6 +339,7 @@ DIRECTIONLESS_SENTENCES = { # North, south, up, down, etc.
     "I'll try going {} for awhile.": 1,
     "Heading {}.": 1,
     "Bearing {}.": 1,
+    "Going {}.": 1,
     "I can't figure out which way goes {}.": 1,
     "I'll spend some time finding the way {}.": 1,
     "If only the way {} were marked somehow!": 1,
@@ -331,14 +350,23 @@ DIRECTIONLESS_SENTENCES = { # North, south, up, down, etc.
 }
 
 ROOM_SENTENCES = {
-    "A {}.": 10,
-    "Another {}.": 5,
+    "A {}.": 15,
+    "Another {}.": 8,
     "I'll stay in this {} a while.": 1,
     "Should I spend the night in this {}?": 1,
     "I awoke in this {}.": 1,
-    "Yet another {}.": 2,
+    "Yet another {}.": 3,
     "I tire of coming across another {}.": 1,
     "I find myself in a {}.": 1,
+    "Setting up camp in this {}.": 1,
+    "Taking a break in this {}.": 1,
+    "Sitting in a {}.": 1,
+    "Searched a {}.": 1,
+    "Found a {}.": 1,
+    "Claiming this {}.": 1,
+    "Fell into a {}.": 1,
+    "Lunched in a {}.": 1,
+    "Snacking in a {}.": 1,
 }
 
 ROOM_DESCRIPTORS = {
@@ -373,6 +401,7 @@ GENERIC_ROOM_TYPES = {
     'chamber': 10,
     'corridor': 10,
     'hallway': 10,
+    'hall': 10,
     'passage': 10,
     'area': 10,
     'lobby': 2,
