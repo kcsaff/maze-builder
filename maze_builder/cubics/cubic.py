@@ -169,24 +169,24 @@ class Cubic(object):
         ny = ny if ny is not None else y
         nz = nz if nz is not None else z
 
-        def generate_routes(self, seed):
+        def generate_routes(seed):
             routes = [
-                Route(self.make_route(seed.coords_along(_maybe_call(x), x=1))),
-                Route(self.make_route(seed.coords_along(_maybe_call(y), y=1))),
-                Route(self.make_route(seed.coords_along(_maybe_call(z), z=1))),
-                Route(self.make_route(seed.coords_along(_maybe_call(nx), x=-1))),
-                Route(self.make_route(seed.coords_along(_maybe_call(ny), y=-1))),
-                Route(self.make_route(seed.coords_along(_maybe_call(nz), z=-1))),
+                self.make_route(seed.coords_along(_maybe_call(x), x=1)),
+                self.make_route(seed.coords_along(_maybe_call(y), y=1)),
+                self.make_route(seed.coords_along(_maybe_call(z), z=1)),
+                self.make_route(seed.coords_along(_maybe_call(nx), x=-1)),
+                self.make_route(seed.coords_along(_maybe_call(ny), y=-1)),
+                self.make_route(seed.coords_along(_maybe_call(nz), z=-1)),
             ]
 
             return set(route for route in routes if route)
 
-        seed = self.get_room((x, y, z))
+        seed = self.get_room(origin)
         new_routes = set()
 
-        new_routes.update(self.generate_routes(seed))
+        new_routes.update(generate_routes(seed))
         for _ in range(connection_attempts):
-            proposed_route = random.choice(new_routes)
+            proposed_route = random.sample(new_routes, 1)[0]
             new_routes.discard(proposed_route)
             if self.offer_route(proposed_route):
                 new_routes.update(generate_routes(proposed_route.rooms[-1]))

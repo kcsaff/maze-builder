@@ -110,3 +110,32 @@ class CubicPovBuilder(object):
 
         if processor:
             processor.process_pov(filename)
+
+
+class SeededPovBuilder(object):
+    def __init__(self, name, illustrator, attempts=3000):
+        self.name = name
+        self.illustrator = illustrator
+        self.attempts = attempts
+
+    def build(self, processor, verbose=0, filename=POV_FILENAME):
+        # Generate maze
+
+        with timed(verbose > 0, 'Generating maze...', 'Satellite generated in {0:.3f}s'):
+            maxx = random.randint(1, 3)
+            maxy = random.randint(1, 3)
+            maxz = random.randint(1, 3)
+            maze = Cubic().seed(
+                self.attempts,
+                x=lambda: random.randint(1, maxx),
+                y=lambda: random.randint(1, maxy),
+                z=lambda: random.randint(1, maxz),
+            )
+
+        with timed(verbose > 0, 'Writing maze...', 'Satellite written in {0:.3f}s'):
+            data = self.illustrator.draw(maze)
+            with open(filename, 'w') as f:
+                f.write(data)
+
+        if processor:
+            processor.process_pov(filename)
