@@ -19,7 +19,7 @@ class Processor(object):
         self.builders = builders
         self.builders_by_name = {
             builder.name: builder
-            for builder in builders
+            for builder in builders.keys()
             if getattr(builder, 'name', None)
         }
 
@@ -27,6 +27,12 @@ class Processor(object):
         if self.args.tweet:
             self.tweet(filename=OUT_FILENAME)
         elif self.args.builder:
+            if self.args.builder not in self.builders_by_name:
+                print('No builder named `{}`. Available builders are:'.format(self.args.builder))
+                for name in sorted(self.builders_by_name.keys()):
+                    print(' * {}'.format(name))
+                raise RuntimeError('No builder named `{}`'.format(self.args.builder))
+
             self.builders_by_name[self.args.builder].build(self, self.verbose)
         else:
             weighted_choice(self.builders).build(self, self.verbose)

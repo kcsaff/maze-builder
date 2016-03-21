@@ -34,6 +34,9 @@ class Topology(object):
 
         self.teach(*routes)
 
+    def inactive_routes(self):
+        yield from self.known_routes.difference(self.active_routes)
+
     def is_active(self, route):
         route = self._internalize(route)
         return route in self.active_routes

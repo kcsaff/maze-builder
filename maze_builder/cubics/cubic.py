@@ -66,6 +66,9 @@ class Cubic(object):
 
         self.features = list()
 
+    def center(self):
+        return ((self.maxx - self.minx) // 2, (self.maxy - self.miny) // 2, (self.maxy - self.miny) // 2)
+
     def request_feature(self, width, length=None, height=1, name=None, attempts=20, connected=True):
         length = length or width
         rooms = list(self.rooms.values())

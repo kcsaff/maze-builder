@@ -45,6 +45,7 @@ EXCLAMATIONS = {
     ('Blimey', '!.'): 1,
     ('Egads', '!.'): 1,
     ('Crud', '!.'): 1,
+    ('Why', '!.?'): 1,
     ('Nuts', '!.'): 1,
     ('Rats', '!.'): 1,
     ('Fiddlesticks', '!.'): 1,
@@ -201,6 +202,14 @@ NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'shriveled': 1,
     'dried up': 1,
     'dried out': 1,
+    'smelly': 1,
+    'stinky': 1,
+    'noxious': 1,
+    'putrid': 1,
+    'revolting': 1,
+    'grody': 1,
+    'gross': 1,
+    'icky': 1,
 }
 
 INTENSIFIERS = {
@@ -538,10 +547,8 @@ class LostTextWriter(object):
 
     def intro_day_very_confused(self, text):
         day_formats = {
-            'Day ?': 1,
-            'Day ??': 1,
-            'Day ???': 1,
-            'Day ????': 1,
+            'Day ???': 3,
+            'Day ????': 2,
             'Day ?????': 1,
             'Who cares what day it is.': 1,
             'No idea what day this is.': 1,
@@ -574,7 +581,7 @@ class LostTextWriter(object):
         return text + weighted_choice(LOST_SENTENCES) + ' '
 
     def directionless_sentence(self, text):
-        return text + weighted_choice(DIRECTIONLESS_SENTENCES).format(weighted_choice(DIRECTIONS)) + ' '
+        return text + _fix_sentence(weighted_choice(DIRECTIONLESS_SENTENCES).format(weighted_choice(DIRECTIONS))) + ' '
 
     def _exclaim(self, text):
         exclamation, punctuation = weighted_choice(EXCLAMATIONS)

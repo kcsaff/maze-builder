@@ -60,29 +60,23 @@ class ImageBuilder(object):
             processor.tweet(filename=filename)
 
 
-class SatelliteBuilder(object):
-
-    def __init__(self, name):
+class CubicPovBuilder(object):
+    def __init__(self, name, illustrator, x, y=None, z=1):
         self.name = name
-        self.illustrator = TemplateIllustrator()
+        self.illustrator = illustrator
+        self.x, self.y, self.z = x, (y or x), z
 
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
 
-        with timed(verbose > 0, 'Generating satellite...', 'Satellite generated in {0:.3f}s'):
+        with timed(verbose > 0, 'Generating maze...', 'Satellite generated in {0:.3f}s'):
+            maze = Cubic().prepare(
+                self.x, self.y, self.z,
+                origin=(-self.x/2, -self.y/2, -self.z/2)
+            ).fill()
 
-            weights = {
-                0: 1,
-                1: 16,
-                2: 8,
-                3: 2
-            }
-
-            satellite = Cubic().seed(150, x=lambda: weighted_choice(weights))
-
-        with timed(verbose > 0, 'Writing satellite...', 'Satellite written in {0:.3f}s'):
-
-            data = self.illustrator.draw(satellite)
+        with timed(verbose > 0, 'Writing maze...', 'Satellite written in {0:.3f}s'):
+            data = self.illustrator.draw(maze)
             with open(filename, 'w') as f:
                 f.write(data)
 

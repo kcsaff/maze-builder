@@ -123,16 +123,18 @@ def main(args=None):
 
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
-    from maze_builder.cubics.builders import ImageBuilder, ImageBlockIllustrator
+    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder
+    from maze_builder.cubics.illustrators import CubicTemplateIllustrator
     from maze_builder.lost_text.writers import LostTextWriter
 
     processor = Processor({
         CastleBuilder('evil', TemplateIllustrator('evil.pov.jinja2')): 31,
         CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 38,
-        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 25,
+        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 20,
         CastleBuilder('brick', TemplateIllustrator('brick.pov.jinja2')): 4,
-        CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 2,
-        ImageBuilder('bw2d', 506, 253): 15,
+        CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 3,
+        ImageBuilder('bw2d', 506, 253): 12,
+        CubicPovBuilder('boulders', CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 25,
     },
         default_status=LostTextWriter(118).write,
         args=args

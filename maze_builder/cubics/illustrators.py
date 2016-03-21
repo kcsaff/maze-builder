@@ -7,7 +7,7 @@ from PIL import Image
 from PIL import ImageColor
 
 
-RESOURCE_PACKAGE = 'maze_builder.satellites.resources'
+RESOURCE_PACKAGE = 'maze_builder.cubics.resources'
 
 
 def resource(resource_name):
@@ -18,7 +18,7 @@ def template(template_name, **kwargs):
     return jinja2.Template(resource(template_name)).render(**kwargs)
 
 
-class TemplateIllustrator(object):
+class CubicTemplateIllustrator(object):
     def __init__(self, template='satellite.pov.jinja2'):
         self.template = template
 
@@ -26,6 +26,9 @@ class TemplateIllustrator(object):
         return template(
             self.template,
             connections=cubic.topology.active_routes,
+            walls=cubic.topology.inactive_routes(),
+            center=cubic.center(),
+            seed=random.random(),
         )
 
 
