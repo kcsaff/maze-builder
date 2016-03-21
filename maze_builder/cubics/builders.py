@@ -74,10 +74,13 @@ class ImageBuilderCombined(object):
 
     def build(self, processor, verbose=0, filename=PNG_FILENAME):
         # Generate maze
-        with timed(verbose > 0, 'Generating mazes...', 'Maze image generated in {0:.3f}s'):
-            mazes = [Cubic().prepare((self.width-1)//2, (self.height-1)//2).fill() for ill in self.illustrators]
+        with timed(verbose > 0, 'Generating mazes...', 'All mazes generated in {0:.3f}s'):
+            mazes = list()
+            for i in range(len(self.illustrators)):
+                with timed(verbose > 1, 'Generating maze #{}...'.format(i+1), 'Maze generated in {0:.3f}s'):
+                    mazes.append(Cubic().prepare((self.width-1)//2, (self.height-1)//2).fill())
 
-        with timed(verbose > 0, 'Writing maze images...', 'Maze image written in {0:.3f}s'):
+        with timed(verbose > 0, 'Combining maze images...', 'Maze images combined in {0:.3f}s'):
             images = [ill.draw(maze) for ill, maze in zip(self.illustrators, mazes)]
             image = images[0]
             for multiplier in images[1:]:
@@ -97,13 +100,13 @@ class CubicPovBuilder(object):
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
 
-        with timed(verbose > 0, 'Generating maze...', 'Satellite generated in {0:.3f}s'):
+        with timed(verbose > 0, 'Generating maze...', 'Maze generated in {0:.3f}s'):
             maze = Cubic().prepare(
                 self.x, self.y, self.z,
                 origin=(-self.x/2, -self.y/2, -self.z/2)
             ).fill()
 
-        with timed(verbose > 0, 'Writing maze...', 'Satellite written in {0:.3f}s'):
+        with timed(verbose > 0, 'Writing maze...', 'Maze written in {0:.3f}s'):
             data = self.illustrator.draw(maze)
             with open(filename, 'w') as f:
                 f.write(data)
@@ -121,7 +124,7 @@ class SeededPovBuilder(object):
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
 
-        with timed(verbose > 0, 'Generating maze...', 'Satellite generated in {0:.3f}s'):
+        with timed(verbose > 0, 'Generating maze...', 'Maze generated in {0:.3f}s'):
             maxx = random.randint(1, 3)
             maxy = random.randint(1, 3)
             maxz = random.randint(1, 3)
@@ -132,7 +135,7 @@ class SeededPovBuilder(object):
                 z=lambda: random.randint(1, maxz),
             )
 
-        with timed(verbose > 0, 'Writing maze...', 'Satellite written in {0:.3f}s'):
+        with timed(verbose > 0, 'Writing maze...', 'Maze written in {0:.3f}s'):
             data = self.illustrator.draw(maze)
             with open(filename, 'w') as f:
                 f.write(data)
