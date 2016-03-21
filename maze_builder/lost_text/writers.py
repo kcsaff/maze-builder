@@ -438,7 +438,7 @@ ROOM_SENTENCES = {
 }
 
 ROOM_DESCRIPTORS = {
-    '{}': 10,
+    '{}': 15,
     'musty {}': 1,
     'dusty {}': 1,
     'horrid {}': 1,
@@ -457,6 +457,8 @@ ROOM_DESCRIPTORS = {
     'chilly {}': 1,
     'godforsaken {}': 1,
     'featureless {}': 1,
+    'abandoned {}': 1,
+    'deserted {}': 1,
     '{} like any other': 1,
 }
 
