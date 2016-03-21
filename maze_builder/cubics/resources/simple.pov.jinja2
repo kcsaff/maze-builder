@@ -49,7 +49,7 @@ global_settings {
     }
   }
 
-#macro MakeBoulderBase(xd, yd)
+#macro MakeWall(xd, yd)
     box {
         <-xd/2-WALL, -50, -yd/2-WALL>, <xd/2+WALL, HEIGHT, yd/2+WALL>
         rotate <0, 90, 0>
@@ -79,7 +79,7 @@ plane { y, 0
     {%- set yd = y1 - y0 -%}
     {%- set yc = (y1 + y0)/2 -%}
     object {
-        MakeBoulderBase({{ xd }}, {{ yd }})
+        MakeWall({{ xd }}, {{ yd }})
         translate <+{{ xc }}, 0, +{{ yc }}>
         texture { DefaultTexture }
     }
