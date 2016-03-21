@@ -78,6 +78,41 @@ INVERTED_PUNCTUATION = {
     '!': '¡',
 }
 
+STRIKES = {
+    '\u0336': 10, # Long horiz stroke
+    '\u0338': 5, # Tall angled stroke
+    '\u0337': 3, # Short angled stroke
+    '\u0335': 1, # Short horiz stroke
+}
+
+
+CHAR_ENDERS = {
+    '--': 1,
+    '---': 3,
+    '----': 2,
+    '- OH NO': 1,
+    '- UH OH': 1,
+    '': 1,
+}
+
+
+WORD_ENDERS = {
+    ' BYE': 1,
+    '...': 1,
+    '…': 1,
+    '++': 1,
+    '>>>': 1,
+    '﷽': 0.2,
+}
+
+
+def strike(text, prob=1.0):
+    if random.random() <= prob:
+        strike = weighted_choice(STRIKES)
+        return ''.join(c + strike for c in text)
+    else:
+        return text
+
 NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'hungry': 1,
     'cold': 1,
@@ -496,6 +531,15 @@ class LostTextWriter(object):
         text = text.rstrip()
         if len(text) <= self.limit:
             return text
+        elif random.random() < 0.50:
+            if random.random() < 0.50:
+                ender = weighted_choice(CHAR_ENDERS)
+                return text[:self.limit - len(ender)] + ender
+            else:
+                ender = weighted_choice(WORD_ENDERS)
+                while len(text) + len(ender) > self.limit:
+                    text, _ = text.rsplit(None, 1)
+                return text + ender
         else:
             return last_text.rstrip()[:self.limit]
 
@@ -538,7 +582,8 @@ class LostTextWriter(object):
 
     def intro_day_moderately_confused(self, text):
         day_formats = {
-            'Day {} -- or is it {}?': 5,
+            'Day {} -- or is it {}?': 1,
+            'Day {} -- or {}?': 5,
             'Day {} or {}.': 1,
             'Day {1}, or possibly {0}.': 1,
             'Day {}, or {} -- something like that.': 1,
@@ -551,10 +596,18 @@ class LostTextWriter(object):
             'Day ???': 3,
             'Day ????': 2,
             'Day ?????': 1,
+            'Day ??????': 1,
+            'Day #??': 1,
+            'Day #???': 1,
+            'Day #????': 1,
+            'Day #?????': 1,
+            'Day unknown.': 1,
+            'Day. Night. Whatever.': 1,
             'Who cares what day it is.': 1,
             'No idea what day this is.': 1,
             'Who counts the days here?': 1,
             'Another day.': 1,
+            'The days fade into each other.': 1,
             'The days -- they\'re all the same.': 1,
         }
         return text + weighted_choice(day_formats) + ' '
@@ -587,14 +640,14 @@ class LostTextWriter(object):
     def _exclaim(self, text):
         exclamation, punctuation = weighted_choice(EXCLAMATIONS)
         punctuation = random.choice(punctuation)
-        if random.random() < 0.3:
+        if random.random() < 0.25:
             if punctuation == '?':
                 if random.random() < 0.5:
                     punctuation = '?' * random.randint(2, 6)
                 elif random.random() < 0.7:
-                    punctuation = ''.join(random.sample('!?') for _ in range(random.randint(1, 6))) + '?'
+                    punctuation = ''.join(random.choice('!?') for _ in range(random.randint(1, 6))) + '?'
                 elif random.random() < 0.7:
-                    punctuation = ''.join(random.sample('!?‽?') for _ in range(random.randint(1, 6))) + '?'
+                    punctuation = ''.join(random.choice('!?‽?') for _ in range(random.randint(1, 6))) + '?'
                 else:
                     punctuation = '‽'
             elif punctuation == '!':
