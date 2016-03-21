@@ -136,7 +136,7 @@ def main(args=None):
         ImageBuilder('bw2d', 506, 253): 12,
         CubicPovBuilder('boulders', CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 25,
     },
-        default_status=LostTextWriter(118).write,
+        default_status=LostTextWriter().write,
         args=args
     )
 
