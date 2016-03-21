@@ -18,7 +18,15 @@ camera {
     rotate <0, 0, -5+10*rand(R1)>
     rotate <0, -15+30*rand(R1), 0>
 }
-light_source { <-30, 200, 140> color White }
+
+light_source {
+    <-30, 200, 140>
+#if (rand(RT) < 0.5)
+    color White
+#else
+    color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
+#endif
+}
 
 global_settings {
     assumed_gamma 1.0
