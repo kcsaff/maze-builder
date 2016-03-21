@@ -106,12 +106,17 @@ WORD_ENDERS = {
 }
 
 
-def strike(text, prob=1.0):
-    if random.random() <= prob:
-        strike = weighted_choice(STRIKES)
-        return ''.join(c + strike for c in text)
+def strike_all(text):
+    strike = weighted_choice(STRIKES)
+    return ''.join(c + strike for c in str(text))
+
+def strike(text):
+    text = str(text)
+    if random.random() < 0.2:
+        return strike_all(text)
     else:
-        return text
+        return strike_all(text[:int((0.2 + 0.8*random.random())*(1+len(text)))])
+
 
 NEGATIVE_STATUSES = {  # Used as '{}' or 'I'm so {}...'
     'hungry': 1,
@@ -596,7 +601,7 @@ class LostTextWriter(object):
             'Pretty sure this is day {}.'.format: 1,
             'Day {} still?'.format: 1,
             'Day {}, I hope.'.format: 1,
-            (lambda x: strike('Day {}.'.format(x))): 1,
+            (lambda x: strike_all('Day {}.'.format(x))): 1,
         }
         number = day() + random.choice([-2, -1, -1, 0, 0, 0, 1, 1, +2])
         return text + weighted_choice(day_formats)(number) + ' '
@@ -608,7 +613,7 @@ class LostTextWriter(object):
             'Day {} or {}.'.format: 1,
             'Day {1}, or possibly {0}.'.format: 1,
             'Day {}, or {} -- something like that.'.format: 1,
-            (lambda x, y: 'Day {} {}.'.format(strike(x), y)): 1,
+            (lambda x, y: 'Day {} {}.'.format(strike_all(x), y)): 1,
         }
         number = day() + random.randint(-2, +1)
         return text + weighted_choice(day_formats)(number, number+1) + ' '
@@ -631,7 +636,7 @@ class LostTextWriter(object):
             'Another day.': 1,
             'The days fade into each other.': 1,
             'The days -- they\'re all the same.': 1,
-            strike('Day'): 1,
+            strike_all('Day'): 1,
         }
         return text + weighted_choice(day_formats) + ' '
 
@@ -655,15 +660,15 @@ class LostTextWriter(object):
         return text + _fix_sentence(status) + ' '
 
     def lost_sentence(self, text):
-        return text + weighted_choice(LOST_SENTENCES) + ' '
+        sentence = weighted_choice(LOST_SENTENCES)
+        if random.random() < 0.1:
+            sentence = strike(sentence)
+        return text + sentence + ' '
 
     def directionless_sentence(self, text):
         sentence = _fix_sentence(weighted_choice(DIRECTIONLESS_SENTENCES).format(weighted_choice(DIRECTIONS)))
         if random.random() < 0.2:
-            if random.random() < 0.2:
-                sentence = strike(sentence)
-            else:
-                sentence = strike(sentence[:int((0.2 + 0.8*random.random())*(1+len(sentence)))])
+            sentence = strike(sentence)
         return text + sentence + ' '
 
     def _exclaim(self, text):
