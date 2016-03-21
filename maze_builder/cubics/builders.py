@@ -3,6 +3,8 @@ from maze_builder.random2 import weighted_choice
 from maze_builder.util import timed
 from .cubic import Cubic
 from .illustrators import *
+from numbers import Number
+from PIL import ImageChops
 
 
 POV_FILENAME = 'out.pov'
@@ -54,6 +56,32 @@ class ImageBuilder(object):
 
         with timed(verbose > 0, 'Writing maze image...', 'Maze image written in {0:.3f}s'):
             image = self.illustrator.draw(maze)
+            image.save(filename)
+
+        if processor:
+            processor.tweet(filename=filename)
+
+
+class ImageBuilderCombined(object):
+    def __init__(self, name, width, height, illustrators, fun=ImageChops.multiply):
+        self.name = name
+        self.width = width
+        self.height = height
+        self.illustrators = illustrators
+        if isinstance(fun, str):
+            fun = getattr(ImageChops, fun)
+        self.fun = fun
+
+    def build(self, processor, verbose=0, filename=PNG_FILENAME):
+        # Generate maze
+        with timed(verbose > 0, 'Generating mazes...', 'Maze image generated in {0:.3f}s'):
+            mazes = [Cubic().prepare((self.width-1)//2, (self.height-1)//2).fill() for ill in self.illustrators]
+
+        with timed(verbose > 0, 'Writing maze images...', 'Maze image written in {0:.3f}s'):
+            images = [ill.draw(maze) for ill, maze in zip(self.illustrators, mazes)]
+            image = images[0]
+            for multiplier in images[1:]:
+                image = self.fun(image, multiplier)
             image.save(filename)
 
         if processor:

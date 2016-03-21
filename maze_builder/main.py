@@ -123,17 +123,28 @@ def main(args=None):
 
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
-    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder
-    from maze_builder.cubics.illustrators import CubicTemplateIllustrator
+    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined
+    from maze_builder.cubics.illustrators import CubicTemplateIllustrator, ImageBlockIllustratorZoomed
     from maze_builder.lost_text.writers import LostTextWriter
 
     processor = Processor({
         CastleBuilder('evil', TemplateIllustrator('evil.pov.jinja2')): 31,
-        CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 38,
-        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 20,
+        CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 32,
+        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 17,
         CastleBuilder('brick', TemplateIllustrator('brick.pov.jinja2')): 4,
         CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 3,
-        ImageBuilder('bw2d', 506, 253): 12,
+        ImageBuilder('bw2d', 506, 253): 3,
+        ImageBuilder('bw2dtilt', 506, 253, illustrator=ImageBlockIllustratorZoomed()): 1,
+        ImageBuilderCombined('colors2d', 512, 512, (
+            ImageBlockIllustratorZoomed(hall_colors=[(255,0,0)], size=(506, 253)),
+            ImageBlockIllustratorZoomed(hall_colors=[(0,255,0)], size=(506, 253)),
+            ImageBlockIllustratorZoomed(hall_colors=[(0,0,255)], size=(506, 253)),
+        ), 'add'): 8,
+        ImageBuilderCombined('pastels2d', 512, 512, (
+            ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
+            ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
+            ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
+        ), 'multiply'): 19,
         CubicPovBuilder('boulders', CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 25,
     },
         default_status=LostTextWriter().write,
