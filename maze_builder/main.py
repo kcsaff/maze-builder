@@ -133,7 +133,7 @@ def main(args=None):
         CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 17,
         CastleBuilder('brick', TemplateIllustrator('brick.pov.jinja2')): 4,
         CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 3,
-        ImageBuilder('bw2d', 506, 253): 3,
+        ImageBuilder('bw2d', 506, 253): 2,
         ImageBuilder('bw2dtilt', 506, 253, illustrator=ImageBlockIllustratorZoomed()): 1,
         ImageBuilderCombined('colors2d', 512, 512, (
             ImageBlockIllustratorZoomed(hall_colors=[(255,0,0)], size=(506, 253)),
