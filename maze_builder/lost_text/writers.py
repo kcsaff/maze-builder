@@ -484,16 +484,16 @@ class LostTextWriter(object):
         self.states = {
             'intro': {
                 'negative_status': 5,
-                'pre_generic_room': 2,
-                'generic_room': 3,
+                'pre_generic_room': 1,
+                'generic_room': 4,
                 'lost_sentence': 1,
                 'directionless_sentence': 1,
             },
             'negative_status': {
                 'lost_sentence': 4,
                 'directionless_sentence': 4,
-                'pre_generic_room': 1,
-                'generic_room': 1,
+                'pre_generic_room': 0.6,
+                'generic_room': 1.4,
                 'finished': 2,
             },
             'pre_generic_room': {
