@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<scene type="triangle">
+
+<render_passes name="render_passes">
+	<pass_AO sval="disabled"/>
+	<pass_Color sval="disabled"/>
+	<pass_Depth sval="disabled"/>
+	<pass_DiffCol sval="disabled"/>
+	<pass_DiffDir sval="disabled"/>
+	<pass_DiffInd sval="disabled"/>
+	<pass_Diffuse sval="disabled"/>
+	<pass_Emit sval="disabled"/>
+	<pass_Env sval="disabled"/>
+	<pass_GlossCol sval="disabled"/>
+	<pass_GlossDir sval="disabled"/>
+	<pass_GlossInd sval="disabled"/>
+	<pass_IndexMA sval="disabled"/>
+	<pass_IndexOB sval="disabled"/>
+	<pass_Indirect sval="disabled"/>
+	<pass_Mist sval="disabled"/>
+	<pass_Normal sval="disabled"/>
+	<pass_Reflect sval="disabled"/>
+	<pass_Refract sval="disabled"/>
+	<pass_Shadow sval="disabled"/>
+	<pass_Spec sval="disabled"/>
+	<pass_SubsurfaceCol sval="disabled"/>
+	<pass_SubsurfaceDir sval="disabled"/>
+	<pass_SubsurfaceInd sval="disabled"/>
+	<pass_TransCol sval="disabled"/>
+	<pass_TransDir sval="disabled"/>
+	<pass_TransInd sval="disabled"/>
+	<pass_UV sval="disabled"/>
+	<pass_Vector sval="disabled"/>
+	<pass_enable bval="false"/>
+	<pass_mask_invert bval="false"/>
+	<pass_mask_mat_index ival="0"/>
+	<pass_mask_obj_index ival="0"/>
+	<pass_mask_only bval="false"/>
+</render_passes>
+
+<material name="defaultMat">
+	<color r="0.906329" g="0.906329" b="0.906329" a="1"/>
+	<type sval="shinydiffusemat"/>
+</material>
+
+<material name="Material--9223372036576920640">
+	<IOR fval="1.8"/>
+	<color r="0.906329" g="0.906329" b="0.906329" a="1"/>
+	<diffuse_reflect fval="1"/>
+	<emit fval="0"/>
+	<fresnel_effect bval="false"/>
+	<mat_pass_index ival="0"/>
+	<mirror_color r="1" g="1" b="1" a="1"/>
+	<receive_shadows bval="true"/>
+	<specular_reflect fval="0"/>
+	<translucency fval="0"/>
+	<transmit_filter fval="1"/>
+	<transparency fval="0"/>
+	<type sval="shinydiffusemat"/>
+	<visibility sval="normal"/>
+</material>
+
+<light name="Lamp">
+	<cast_shadows bval="true"/>
+	<color r="1" g="1" b="0.9" a="1"/>
+	<from x="100" y="100" z="200"/>
+	<light_enabled bval="true"/>
+	<power fval="10000"/>
+	<type sval="pointlight"/>
+</light>
+
+<camera name="cam">
+	<aperture fval="0"/>
+	<bokeh_rotation fval="0"/>
+	<bokeh_type sval="disk1"/>
+	<dof_distance fval="0"/>
+	<focal fval="1.09375"/>
+	<from x="8" y="8" z="8"/>
+	<resx ival="960"/>
+	<resy ival="540"/>
+	<to x="0" y="0" z="0"/>
+	<type sval="perspective"/>
+	<up x="0" y="0" z="1"/>
+	<view_name sval=""/>
+</camera>
+
+<background name="world_background">
+	<color r="0" g="0" b="0" a="1"/>
+	<ibl bval="false"/>
+	<ibl_samples ival="16"/>
+	<power fval="1"/>
+	<type sval="constant"/>
+</background>
+
+<integrator name="default">
+	<AO_color r="0.1" g="0.1" b="0.2" a="1"/>
+	<AO_distance fval="1"/>
+	<AO_samples ival="32"/>
+	<bg_transp bval="false"/>
+	<bg_transp_refract bval="false"/>
+	<caustics bval="false"/>
+	<do_AO bval="true"/>
+	<raydepth ival="2"/>
+	<shadowDepth ival="2"/>
+	<transpShad bval="false"/>
+	<type sval="directlighting"/>
+</integrator>
+
+<integrator name="volintegr">
+	<type sval="none"/>
+</integrator>
+
+<render>
+	<AA_clamp_indirect fval="0"/>
+	<AA_clamp_samples fval="0"/>
+	<AA_dark_threshold_factor fval="0"/>
+	<AA_detect_color_noise bval="false"/>
+	<AA_inc_samples ival="1"/>
+	<AA_indirect_sample_multiplier_factor fval="1"/>
+	<AA_light_sample_multiplier_factor fval="1"/>
+	<AA_minsamples ival="1"/>
+	<AA_passes ival="1"/>
+	<AA_pixelwidth fval="1.5"/>
+	<AA_resampled_floor fval="0"/>
+	<AA_sample_multiplier_factor fval="1"/>
+	<AA_threshold fval="0.05"/>
+	<AA_variance_edge_size ival="10"/>
+	<AA_variance_pixels ival="0"/>
+	<adv_auto_min_raydist_enabled bval="true"/>
+	<adv_auto_shadow_bias_enabled bval="true"/>
+	<adv_min_raydist_value fval="5e-05"/>
+	<adv_shadow_bias_value fval="0.0005"/>
+	<background_name sval="world_background"/>
+	<camera_name sval="cam"/>
+	<color_space sval="sRGB"/>
+	<customString sval=""/>
+	<drawParams bval="false"/>
+	<filter_type sval="gauss"/>
+	<gamma fval="1"/>
+	<height ival="540"/>
+	<integrator_name sval="default"/>
+	<premult bval="true"/>
+	<show_sam_pix bval="true"/>
+	<threads ival="-1"/>
+	<tile_size ival="32"/>
+	<tiles_order sval="random"/>
+	<type sval="none"/>
+	<volintegrator_name sval="volintegr"/>
+	<width ival="960"/>
+	<xstart ival="0"/>
+	<ystart ival="0"/>
+</render>
+</scene>

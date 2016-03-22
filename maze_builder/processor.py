@@ -8,6 +8,7 @@ from .random2 import weighted_choice
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
 NEW_FILESIZE_LIMIT = '1999kb'
 OUT_FILENAME = 'out.png'
+OUT_YAFARAY = 'out', 'out.tga'
 JPG_FILENAME = 'out{}.jpg'
 
 
@@ -37,6 +38,43 @@ class Processor(object):
         else:
             weighted_choice(self.builders).build(self, self.verbose)
 
+    def process_obj(self, filename):
+        if self.verbose > 0:
+            print('No OBJ handler registered, pipeline stopping')
+        return
+
+    def process_yafaray(self, filename):
+        if not self.args or not self.args.yafaray:
+            if self.verbose > 0:
+                print('No Yafaray XML handler registered, pipeline stopping')
+            return
+
+        yafaray = self.args.yafaray
+
+        plugins = self.args.yafaray_plugins
+        if not plugins:
+            candidate = os.path.join(os.path.dirname(yafaray), 'plugins')
+            if os.path.exists(candidate):
+                plugins = candidate
+
+        yafaray_args = [
+            self.args.yafaray,
+            #'-vl2'
+        ]
+
+        if plugins:
+            yafaray_args.extend(('-pp', plugins))
+
+        yafaray_args.extend((filename, OUT_YAFARAY[0]))
+
+        with timed(self.verbose, 'Yafaray is rendering maze...', 'Maze rendered in {0:.3f}s'):
+            subprocess.check_call(yafaray_args)
+
+        filename = self._convert(OUT_YAFARAY[-1])
+
+        if self.args.keys:
+            self.tweet(filename=filename)
+
     def process_pov(self, filename):
         if not self.args or not self.args.pov:
             if self.verbose > 0:
@@ -63,7 +101,7 @@ class Processor(object):
             '-P', '-D', '-V', '+FN8'
         ])
 
-        with timed(self.verbose, 'Rendering maze...', 'Maze rendered in {0:.3f}s'):
+        with timed(self.verbose, 'POV-Ray is rendering maze...', 'Maze rendered in {0:.3f}s'):
             subprocess.check_call(pov_args)
 
         if self.args.keys:
@@ -100,6 +138,21 @@ class Processor(object):
             twitter.update_status(**kwargs)
         else:
             raise RuntimeError('Tweet requires status or filename')
+
+    def _convert(self, filename, outname=OUT_FILENAME):
+        if filename == outname:
+            return outname
+
+        if not self.args or not self.args.magick:
+            raise RuntimeError('No ImageMagick handler registered & it\'s required to convert! Pipeline stopping')
+
+        with timed(self.verbose > 0, 'Converting image...', 'Converted image in {0:.3f}s'):
+            call_args = [
+                self.args.magick, filename, outname
+            ]
+            subprocess.check_call(call_args)
+
+        return outname
 
     def _resize(self, filename):
         if not self.args or not self.args.magick:

@@ -5,6 +5,7 @@ import sys
 from collections import namedtuple
 import shutil
 import random
+import math
 
 
 POVRAY_INI = 'povray.ini'
@@ -12,7 +13,12 @@ POVRAY_INI = 'povray.ini'
 
 Settings = namedtuple(
     'Settings',
-    ['config', 'verbose', 'keys', 'pov', 'ini', 'include_path', 'magick', 'builder', 'tweet']
+    ['config', 'verbose', 'keys',
+     'pov', 'ini', 'include_path',
+     'magick',
+     'builder', 'tweet',
+     'yafaray', 'yafaray_plugins',
+     ]
 )
 
 
@@ -26,6 +32,8 @@ DEFAULTS = Settings(
     magick=None,
     builder=None,
     tweet=False,  # Misleading, change this
+    yafaray=None,
+    yafaray_plugins=None,
 )
 
 
@@ -50,7 +58,7 @@ parser.add_argument(
     help='Keys file needed to post to Twitter',
 )
 parser.add_argument(
-    '--pov', '-p', type=str,
+    '--pov', '-P', type=str,
     help='Path to POV-Ray executable',
 )
 parser.add_argument(
@@ -68,6 +76,10 @@ parser.add_argument(
 parser.add_argument(
     '--builder', '-b', type=str,
     help='Force particular builder to be used',
+)
+parser.add_argument(
+    '--yafaray', '-Y', type=str,
+    help='Yafaray executable',
 )
 
 parser.add_argument(
@@ -123,9 +135,11 @@ def main(args=None):
 
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
-    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder
+    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder, \
+        CubicObjBuilder, CubicYafarayBuilder
     from maze_builder.cubics.illustrators.template import CubicTemplateIllustrator
     from maze_builder.cubics.illustrators.imaging import ImageBlockIllustratorZoomed
+    from maze_builder.cubics.illustrators.mesh import ObjIllustrator, YafarayIllustrator
     from maze_builder.lost_text.writers import LostTextWriter
 
     processor = Processor({
@@ -150,6 +164,16 @@ def main(args=None):
         CubicPovBuilder('simple3d', CubicTemplateIllustrator('simple.pov.jinja2'), 50): 30,
         CubicPovBuilder('borg', CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 15,
         SeededPovBuilder('borg2', CubicTemplateIllustrator('borg.pov.jinja2')): 10,
+        CubicObjBuilder('objtest', ObjIllustrator(), 20, 20): 0,
+        CubicYafarayBuilder(
+            'yafatest',
+            YafarayIllustrator(
+                'simple.yafaray.xml',
+                width=0.5,
+                height=(lambda x,y: 0.5+0.1*math.cos(2*x+y)),
+                depth=(lambda x,y: 0+0.1*math.cos(2*x+y)),
+                density=3, smoothing_degrees=35,
+            ), 50, 50): 0,
     },
         default_status=LostTextWriter().write,
         args=args

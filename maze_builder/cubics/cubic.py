@@ -127,7 +127,11 @@ class Cubic(object):
         return success
 
     def prepare(self, x, y, z=1, origin=(0, 0, 0)):
+        x, y, z = int(x), int(y), int(z)
         ox, oy, oz = origin
+        ox = int(ox) if ox == int(ox) else ox
+        oy = int(oy) if oy == int(oy) else oy
+        oz = int(oz) if oz == int(oz) else oz
 
         for i in range(x):
             for j in range(y):

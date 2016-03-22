@@ -16,6 +16,9 @@ class WeightedChoice(object):
         else:
             self.total = sum(self.weights)
 
+    def __iter__(self):
+        return iter(self.choices)
+
     @classmethod
     def of(self, obj):
         if isinstance(obj, WeightedChoice) or callable(obj):
