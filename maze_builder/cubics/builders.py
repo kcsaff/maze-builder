@@ -1,9 +1,7 @@
-import random
-from maze_builder.random2 import weighted_choice
 from maze_builder.util import timed
 from .cubic import Cubic
-from .illustrators import *
-from numbers import Number
+from .illustrators.imaging import *
+from .illustrators.unicode import *
 from PIL import ImageChops
 
 
