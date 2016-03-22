@@ -124,7 +124,8 @@ def main(args=None):
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
     from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder
-    from maze_builder.cubics.illustrators import CubicTemplateIllustrator, ImageBlockIllustratorZoomed
+    from maze_builder.cubics.illustrators.template import CubicTemplateIllustrator
+    from maze_builder.cubics.illustrators.imaging import ImageBlockIllustratorZoomed
     from maze_builder.lost_text.writers import LostTextWriter
 
     processor = Processor({
