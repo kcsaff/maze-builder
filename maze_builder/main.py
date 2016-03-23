@@ -175,10 +175,11 @@ def main(args=None):
             'mazehill',
             YafarayIllustrator(
                 'simple.yafaray.xml',
+                resolution=(1024, 512),
                 width=0.5,
                 height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
                 depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-                density=2, smoothing_degrees=35,
+                density=1, smoothing_degrees=35,
             ), 150, 150): 30,
     })
     builders.update({

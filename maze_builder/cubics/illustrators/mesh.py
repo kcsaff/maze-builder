@@ -168,9 +168,10 @@ class ObjIllustrator(MeshIllustrator):
 
 
 class YafarayIllustrator(MeshIllustrator):
-    def __init__(self, xml, *args, **kwargs):
+    def __init__(self, xml, *args, resolution=(1024, 512), **kwargs):
         super().__init__(*args, **kwargs)
         self.xml = xml
+        self.resolution = resolution
 
     def draw(self, cubic, fp=None):
         mesh = super().draw(cubic)
@@ -202,7 +203,7 @@ class YafarayIllustrator(MeshIllustrator):
         cminz, cmaxz = mesh.find_limits((0, 0, 1), xbounds=(-1, 1), ybounds=(-1, 1))
         look_at = (0, 0, random.random() * (cminz + cmaxz)/2)
         print(look_at)
-        scene.set_camera(Camera(camera_location, look_at))
+        scene.set_camera(Camera(camera_location, look_at, resolution=self.resolution))
         # Action
         scene.add_mesh(mesh)
         return dump_yafaray(fp, resource(self.xml), scene, material_map={None: 'defaultMat'})
