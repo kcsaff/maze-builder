@@ -2,7 +2,7 @@ import random
 import subprocess
 import os.path
 from .util import timed
-from .random2 import weighted_choice
+from .random2 import weighted_choice, WeightedChoice
 
 
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
@@ -17,26 +17,23 @@ class Processor(object):
         self.args = args
         self.verbose = args.verbose
         self.default_status = default_status
-        self.builders = builders
-        self.builders_by_name = {
-            builder.name: builder
-            for builder in builders.keys()
-            if getattr(builder, 'name', None)
-        }
+        self.builders = WeightedChoice.of(builders)
 
     def start(self):
         if self.args.tweet:
             self.tweet(filename=OUT_FILENAME)
         elif self.args.builder:
-            if self.args.builder not in self.builders_by_name:
+            try:
+                builder = self.builders(lambda builder: builder.name == self.args.builder)
+            except KeyError:
                 print('No builder named `{}`. Available builders are:'.format(self.args.builder))
-                for name in sorted(self.builders_by_name.keys()):
+                for name in sorted(builder.name for builder in self.builders):
                     print(' * {}'.format(name))
                 raise RuntimeError('No builder named `{}`'.format(self.args.builder))
-
-            self.builders_by_name[self.args.builder].build(self, self.verbose)
+            else:
+                builder.build(self, self.verbose)
         else:
-            weighted_choice(self.builders).build(self, self.verbose)
+            self.builders().build(self, self.verbose)
 
     def process_obj(self, filename):
         if self.verbose > 0:

@@ -6,6 +6,7 @@ from collections import namedtuple
 import shutil
 import random
 import math
+import noise
 
 
 POVRAY_INI = 'povray.ini'
@@ -142,7 +143,7 @@ def main(args=None):
     from maze_builder.cubics.illustrators.mesh import ObjIllustrator, YafarayIllustrator
     from maze_builder.lost_text.writers import LostTextWriter
 
-    processor = Processor({
+    builders = {
         CastleBuilder('evil', TemplateIllustrator('evil.pov.jinja2')): 31,
         CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 32,
         CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 17,
@@ -164,17 +165,34 @@ def main(args=None):
         CubicPovBuilder('simple3d', CubicTemplateIllustrator('simple.pov.jinja2'), 50): 30,
         CubicPovBuilder('borg', CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 15,
         SeededPovBuilder('borg2', CubicTemplateIllustrator('borg.pov.jinja2')): 10,
-        CubicObjBuilder('objtest', ObjIllustrator(), 20, 20): 0,
+    }
+    noise_amount = 10
+    noise_scale = 2**(noise_amount-3)
+    noise_x = 1000 * random.random()
+    noise_y = 1000 * random.random()
+    builders.update({
         CubicYafarayBuilder(
-            'yafatest',
+            'mazehill',
             YafarayIllustrator(
                 'simple.yafaray.xml',
                 width=0.5,
-                height=(lambda x,y: 0.5+0.1*math.cos(2*x+y)),
-                depth=(lambda x,y: 0+0.1*math.cos(2*x+y)),
-                density=3, smoothing_degrees=35,
-            ), 50, 50): 0,
-    },
+                height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+                depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+                density=2, smoothing_degrees=35,
+            ), 150, 150): 30,
+    })
+    builders.update({
+        CubicObjBuilder(
+            'objtest',
+            ObjIllustrator(
+                width=0.5,
+                height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+                depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+                density=4, smoothing_degrees=35, enclosed=True
+            ), 20, 20): 0,
+    })
+    processor = Processor(
+        builders=builders,
         default_status=LostTextWriter().write,
         args=args
     )

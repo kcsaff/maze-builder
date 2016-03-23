@@ -164,9 +164,7 @@ class CubicObjBuilder(object):
             ).fill()
 
         with timed(verbose > 0, 'Writing maze...', 'Maze written in {0:.3f}s'):
-            data = self.illustrator.draw(maze)
-            with open(filename, 'w') as f:
-                f.write(data)
+            self.illustrator.draw(maze, filename)
 
         if processor:
             processor.process_obj(filename)

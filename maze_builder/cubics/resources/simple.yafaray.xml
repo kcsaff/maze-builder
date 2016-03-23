@@ -39,7 +39,7 @@
 </render_passes>
 
 <material name="defaultMat">
-	<color r="0.906329" g="0.906329" b="0.906329" a="1"/>
+	<color r="1" g="1" b="1" a="1"/>
 	<type sval="shinydiffusemat"/>
 </material>
 
@@ -62,10 +62,10 @@
 
 <light name="Lamp">
 	<cast_shadows bval="true"/>
-	<color r="1" g="1" b="0.9" a="1"/>
-	<from x="100" y="100" z="200"/>
+	<color r="1" g="0.9" b="0.8" a="1"/>
+	<from x="200" y="200" z="100s"/>
 	<light_enabled bval="true"/>
-	<power fval="10000"/>
+	<power fval="40000"/>
 	<type sval="pointlight"/>
 </light>
 
@@ -75,17 +75,18 @@
 	<bokeh_type sval="disk1"/>
 	<dof_distance fval="0"/>
 	<focal fval="1.09375"/>
-	<from x="8" y="8" z="8"/>
+	<!-- <from x="50" y="50" z="4"/> -->
+	<from x="0" y="20" z="40" />
 	<resx ival="960"/>
 	<resy ival="540"/>
-	<to x="0" y="0" z="0"/>
+	<to x="0" y="0" z="-3"/>
 	<type sval="perspective"/>
 	<up x="0" y="0" z="1"/>
 	<view_name sval=""/>
 </camera>
 
 <background name="world_background">
-	<color r="0" g="0" b="0" a="1"/>
+	<color r="0.5" g="0.5" b="0.5" a="1"/>
 	<ibl bval="false"/>
 	<ibl_samples ival="16"/>
 	<power fval="1"/>
@@ -93,7 +94,7 @@
 </background>
 
 <integrator name="default">
-	<AO_color r="0.1" g="0.1" b="0.2" a="1"/>
+	<AO_color r="0" g="0.1" b="0.2" a="1"/>
 	<AO_distance fval="1"/>
 	<AO_samples ival="32"/>
 	<bg_transp bval="false"/>
