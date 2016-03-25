@@ -47,7 +47,7 @@ def _pipe(fun, value, *environment):
     if fun is None:
         return value
     elif isinstance(fun, Pipeline):
-        value = yield from fun(value, *environment)
+        value = yield from fun.pipe(value, *environment)
     elif callable(fun):
         value = fun(value)
         received = yield value
@@ -59,6 +59,8 @@ def _pipe(fun, value, *environment):
                 value = yield from _pipe(_select(obj[fun]), value, *environment[i:])
                 break
         else:
+            for env in environment:
+                print(env)
             raise KeyError('No context contains key `{}`'.format(fun))
     return value
 
@@ -111,10 +113,13 @@ class Choice(Selector):
             total = sum(weights)
         else:
             choices, weights, total = self.choices, self.weights, self.total
-        if len(choices) == 1:
+
+        if len(choices) == 0:
+            raise KeyError('No items available in WeightedChoice')
+        elif len(choices) == 1:
             return choices[0]
         elif total <= 0:
-            raise KeyError('No items available in WeightedChoice')
+            return random.choice(choices)
 
         # http://stackoverflow.com/a/17011134/1115497
         threshold = random.uniform(0, total)
@@ -193,7 +198,7 @@ class Pipeline(object):
         self.__steps = steps
         self.__environment = dict(environment)
 
-    def __call__(self, input, *environment):
+    def pipe(self, input, *environment):
         value = input
         for step in self.__steps:
             step = _select(step)
@@ -201,6 +206,12 @@ class Pipeline(object):
                 break
             value = yield from _pipe(step, value, self, *environment)
         return value
+
+    def product(self, input, *environment):
+        result = input
+        for result in self.pipe(input, *environment):
+            pass
+        return result
 
     def __contains__(self, step):
         return step in self.__environment

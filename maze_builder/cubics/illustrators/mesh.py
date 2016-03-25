@@ -9,16 +9,20 @@ import random
 import io
 
 
-class MeshIllustrator(object):
+YAFARAY_FILENAME = 'out.yafaray.xml'
+
+
+OBJ_FILENAME = 'out.obj'
+
+
+class Mesher2D(object):
     def __init__(
         self,
-        width=0.1, height=1, depth=0,
+        wall=0.1,
         material=None, density=1, enclosed=False,
         **attrs
     ):
-        self.width = width
-        self.depth = depth
-        self.height = height
+        self.wall = wall
         self.material = material
         self.density = density
         self.enclosed = enclosed
@@ -26,23 +30,30 @@ class MeshIllustrator(object):
 
         self.rectangle_kwargs = dict(material=self.material, density=self.density)
 
-    def _warp(self, v):
-        x, y, z = v
-        depth = self.depth(x, y) if callable(self.depth) else 0
-        height = self.height(x, y) if callable(self.height) else 1
+    def __call__(self, cubic):
+        return self.draw(cubic)
 
-        return x, y, (1-z) * depth + z * height
+    def draw(self, cubic):
+        mesh = MeshBuilder(**self.attrs)
 
-    def _warp_enclosed(self, v, zmin=None, cubic=None):
-        x, y, z = v
-        depth = self.depth(x, y) if callable(self.depth) else 0
-        height = self.height(x, y) if callable(self.height) else 1
-        if z == 0 and (x <= cubic.minx or y <= cubic.miny or x > cubic.maxx+1 or y > cubic.maxy+1):
-            return x, y, 0
+        wall = self.wall() if callable(self.wall) else self.wall
 
-        return x, y, ((1-z) * depth + z * height) - (zmin or 0)
+        for room in cubic.rooms:
+            self._draw_room(cubic, mesh, room, wall)
 
-    def _draw_room(self, cubic, mesh, coords, width, z0, z1, zmin):
+        for i in range(int(cubic.maxx - cubic.minx) + 1):
+            x = cubic.minx + i
+            self._draw_room(cubic, mesh, (x, cubic.maxy+1, cubic.minz), wall)
+
+        for j in range(int(cubic.maxx - cubic.minx) + 1):
+            y = cubic.miny + j
+            self._draw_room(cubic, mesh, (cubic.maxx+1, y, cubic.minz), wall)
+
+        self._draw_room(cubic, mesh, (cubic.maxx+1, cubic.maxy+1, cubic.minz), wall)
+
+        return mesh
+
+    def _draw_room(self, cubic, mesh, coords, wall):
         x, y, z = coords
         if z != cubic.maxz:
             raise RuntimeError('Illustrator only works for 2D')
@@ -52,24 +63,24 @@ class MeshIllustrator(object):
         xtop = x == cubic.maxx+1
         ytop = y == cubic.maxy+1
 
-        va = mesh.enter_vertex((x, y, z0))
-        vb = mesh.enter_vertex((x + width, y, z0))
-        vc = mesh.enter_vertex((x + 1, y, z0))
-        vd = mesh.enter_vertex((x, y + width, z0))
-        ve = mesh.enter_vertex((x + width, y + width, z0))
-        vf = mesh.enter_vertex((x + 1, y + width, z0))
-        vg = mesh.enter_vertex((x, y + 1, z0))
-        vh = mesh.enter_vertex((x + width, y + 1, z0))
-        vi = mesh.enter_vertex((x + 1, y + 1, z0))
-        vA = mesh.enter_vertex((x, y, z1))
-        vB = mesh.enter_vertex((x + width, y, z1))
-        vC = mesh.enter_vertex((x + 1, y, z1))
-        vD = mesh.enter_vertex((x, y + width, z1))
-        vE = mesh.enter_vertex((x + width, y + width, z1))
-        vF = mesh.enter_vertex((x + 1, y + width, z1))
-        vG = mesh.enter_vertex((x, y + 1, z1))
-        vH = mesh.enter_vertex((x + width, y + 1, z1))
-        vI = mesh.enter_vertex((x + 1, y + 1, z1))
+        va = mesh.enter_vertex((x, y, z))
+        vb = mesh.enter_vertex((x + wall, y, z))
+        vc = mesh.enter_vertex((x + 1, y, z))
+        vd = mesh.enter_vertex((x, y + wall, z))
+        ve = mesh.enter_vertex((x + wall, y + wall, z))
+        vf = mesh.enter_vertex((x + 1, y + wall, z))
+        vg = mesh.enter_vertex((x, y + 1, z))
+        vh = mesh.enter_vertex((x + wall, y + 1, z))
+        vi = mesh.enter_vertex((x + 1, y + 1, z))
+        vA = mesh.enter_vertex((x, y, z+1))
+        vB = mesh.enter_vertex((x + wall, y, z+1))
+        vC = mesh.enter_vertex((x + 1, y, z+1))
+        vD = mesh.enter_vertex((x, y + wall, z+1))
+        vE = mesh.enter_vertex((x + wall, y + wall, z+1))
+        vF = mesh.enter_vertex((x + 1, y + wall, z+1))
+        vG = mesh.enter_vertex((x, y + 1, z+1))
+        vH = mesh.enter_vertex((x + wall, y + 1, z+1))
+        vI = mesh.enter_vertex((x + 1, y + 1, z+1))
 
         #     g--h----i     ^
         #    /| /|    |     +
@@ -89,7 +100,7 @@ class MeshIllustrator(object):
 
         if xtop:
             mesh.rectangle((vB, vb, vE), **kwargs)
-        elif x == cubic.minx:
+        elif xbot:
             mesh.rectangle((va, vA, vd), **kwargs)
         if not xtop and cubic.any_active_route_connecting((x, y, z), (x-1, y, z)):
             # Draw corridor in -X direction
@@ -104,7 +115,7 @@ class MeshIllustrator(object):
 
         if ytop:
             mesh.rectangle((vD, vE, vd), **kwargs)
-        elif y == cubic.miny:
+        elif ybot:
             mesh.rectangle((va, vb, vA), **kwargs)
         if not ytop and cubic.any_active_route_connecting((x, y, z), (x, y-1, z)):
             # Draw corridor in -Y direction
@@ -117,84 +128,70 @@ class MeshIllustrator(object):
             mesh.rectangle((vB, vC, vE), **kwargs)
             mesh.rectangle((vE, vF, ve), **kwargs)
 
-    def draw(self, cubic):
-        mesh = MeshBuilder(**self.attrs)
 
-        width = self.width() if callable(self.width) else self.width
-        z1 = self.height if not callable(self.height) else 1
-        z0 = self.depth if not callable(self.depth) else 0
+class Warper2D(object):
+    def __init__(self, noise, args=(), scale=1, height=1, offset=(0, 0)):
+        self.noise = noise
+        self.args = args
+        self.scale = scale
+        self.height = height
+        self.offset = offset
 
-        zmin = float('inf')
-        for i in range(int(cubic.maxx - cubic.minx) + 3):
-            x = cubic.minx + i
-            for j in range(int(cubic.maxx - cubic.minx) + 3):
-                y = cubic.miny + j
-                height = self.depth(x, y)
-                if height < zmin:
-                    zmin = height
+    def __call__(self, mesh):
+        args = self.args() if callable(self.args) else self.args
+        scale = self.scale() if callable(self.scale) else self.scale
+        height = self.height() if callable(self.height) else self.height
+        offx, offy = self.offset() if callable(self.offset) else self.offset
 
-        for room in cubic.rooms:
-            self._draw_room(cubic, mesh, room, width, z0, z1, zmin)
+        def warp(v):
+            x, y, z = v
+            z += height * scale * self.noise(offx + x / scale, offy + y / scale, *args)
+            return x, y, z
 
-        for i in range(int(cubic.maxx - cubic.minx) + 1):
-            x = cubic.minx + i
-            self._draw_room(cubic, mesh, (x, cubic.maxy+1, cubic.minz), width, z0, z1, zmin)
-
-        for j in range(int(cubic.maxx - cubic.minx) + 1):
-            y = cubic.miny + j
-            self._draw_room(cubic, mesh, (cubic.maxx+1, y, cubic.minz), width, z0, z1, zmin)
-
-        self._draw_room(cubic, mesh, (cubic.maxx+1, cubic.maxy+1, cubic.minz), width, z0, z1, zmin)
-
-        if self.enclosed:
-            mesh.rectangle(
-                [(cubic.minx, cubic.miny, 0), (cubic.minx, cubic.maxy+1+width, 0), (cubic.maxx+1+width, cubic.miny, 0)],
-                material=self.material
-            )
-
-        if callable(self.height) or callable(self.depth):
-            if self.enclosed:
-                return MeshWarp(mesh, lambda v: self._warp_enclosed(v, zmin-width, cubic))
-            else:
-                return MeshWarp(mesh, self._warp)
-        else:
-            return mesh
+        mesh.perform_warp(warp)
+        return mesh
 
 
-class ObjIllustrator(MeshIllustrator):
-    def draw(self, cubic, fp=None):
-        mesh = super().draw(cubic)
-        return dump_obj(fp, mesh)
-
-
-class YafarayIllustrator(MeshIllustrator):
-    def __init__(self, xml, *args, resolution=(1024, 512), **kwargs):
-        super().__init__(*args, **kwargs)
-        self.xml = xml
-        self.resolution = resolution
-
-    def draw(self, cubic, fp=None):
-        mesh = super().draw(cubic)
+class SceneWrapper(object):
+    def __call__(self, mesh):
         scene = Scene()
-        # Lights
+        scene.add_mesh(mesh)
+        return scene
+
+
+class RandomSunMaker(object):
+    def __call__(self, scene):
         light_color = Color(1-random.random()**2.5,1-random.random()**2.5,1-random.random()**1.5)
         ambience_color = (1-random.random()**1.5) * (Color.WHITE - light_color)
         sky_color = ambience_color.blowout(1-random.random()*random.random()*random.random())
         scene.set_background(sky_color)
         scene.set_ambience(Ambience(ambience_color))
         scene.add_light(Light(random2.hemisphere(1, minz=0.001, maxz=0.6), Color.WHITE, 0.5+random.random(), type='sunlight'))
-        # Camera
-        camera_location = random2.hemisphere(40, minz=1)
-        print(camera_location)
+        return scene
+
+
+class RandomCameraPlacer(object):
+    def __init__(self, resolution=(1024, 512)):
+        self.resolution = resolution
+
+    def __call__(self, scene):
+        mesh = scene.meshes[0]
+
+        minx, maxx = mesh.find_limits((1, 0, 0))
+        miny, maxy = mesh.find_limits((0, 1, 0))
+
+        radius = 1 + random.random() * min((maxx-minx, maxy-miny))
+        camera_location = random2.hemisphere(radius, minz=1)
+
         _, maxz = mesh.find_limits(
             (0, 0, 1),
             xbounds=(
-                max((cubic.minx+1, camera_location[0]-1)),
-                min((cubic.maxx-2, camera_location[0]+1)),
+                max((minx+1, camera_location[0]-1)),
+                min((maxx-1, camera_location[0]+1)),
             ),
             ybounds=(
-                max((cubic.miny+1, camera_location[1]-1)),
-                min((cubic.maxy-2, camera_location[1]+1)),
+                max((miny+1, camera_location[1]-1)),
+                min((maxy-2, camera_location[1]+1)),
             )
         )
         print('Camera limit {}'.format(maxz))
@@ -202,8 +199,31 @@ class YafarayIllustrator(MeshIllustrator):
             camera_location = (camera_location[0], camera_location[1], camera_location[2] + maxz)
         cminz, cmaxz = mesh.find_limits((0, 0, 1), xbounds=(-1, 1), ybounds=(-1, 1))
         look_at = (0, 0, random.random() * (cminz + cmaxz)/2)
-        print(look_at)
+
         scene.set_camera(Camera(camera_location, look_at, resolution=self.resolution))
-        # Action
-        scene.add_mesh(mesh)
-        return dump_yafaray(fp, resource(self.xml), scene, material_map={None: 'defaultMat'})
+
+        return scene
+
+
+class ObjSaver(object):
+    def __init__(self, filename=OBJ_FILENAME):
+        self.filename = filename
+
+    def __call__(self, mesh):
+        if isinstance(mesh, Scene):
+            mesh = mesh.meshes[0]
+        with open(self.filename, 'w') as f:
+            dump_obj(f, mesh)
+        return self.filename
+
+
+class YafaraySaver(object):
+    def __init__(self, filename=YAFARAY_FILENAME, material_map=None, xml='simple.yafaray.xml'):
+        self.filename = filename
+        self.material_map = material_map or {None: 'defaultMat'}
+        self.xml = xml
+
+    def __call__(self, scene):
+        scene = Scene()
+        dump_yafaray(self.filename, resource(self.xml), scene, material_map={None: 'defaultMat'})
+        return self.filename

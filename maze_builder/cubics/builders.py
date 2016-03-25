@@ -8,13 +8,7 @@ from PIL import ImageChops
 POV_FILENAME = 'out.pov'
 
 
-OBJ_FILENAME = 'out.obj'
-
-
 PNG_FILENAME = 'out.png'
-
-
-YAFARAY_FILENAME = 'out.yafaray.xml'
 
 
 class UnicodeBuilder(object):
@@ -148,45 +142,15 @@ class SeededPovBuilder(object):
             processor.process_pov(filename)
 
 
-class CubicObjBuilder(object):
-    def __init__(self, name, illustrator, x, y=None, z=1):
-        self.name = name
-        self.illustrator = illustrator
-        self.x, self.y, self.z = x, (y or x), z
+class FilledCubicGenerator(object):
+    def __init__(self, x, y=None, z=1):
+        self.x = x
+        self.y = y or x
+        self.z = z
 
-    def build(self, processor, verbose=0, filename=OBJ_FILENAME):
-        # Generate maze
-
+    def __call__(self, verbose=1):
         with timed(verbose > 0, 'Generating maze...', 'Maze generated in {0:.3f}s'):
-            maze = Cubic().prepare(
+            return Cubic().prepare(
                 self.x, self.y, self.z,
-                origin=(-self.x/2, -self.y/2, -self.z/2)
+                origin=(-self.x//2, -self.y//2, -self.z//2)
             ).fill()
-
-        with timed(verbose > 0, 'Writing maze...', 'Maze written in {0:.3f}s'):
-            self.illustrator.draw(maze, filename)
-
-        if processor:
-            processor.process_obj(filename)
-
-
-class CubicYafarayBuilder(object):
-    def __init__(self, name, illustrator, x, y=None, z=1):
-        self.name = name
-        self.illustrator = illustrator
-        self.x, self.y, self.z = x, (y or x), z
-
-    def build(self, processor, verbose=0, filename=YAFARAY_FILENAME):
-        # Generate maze
-
-        with timed(verbose > 0, 'Generating maze...', 'Maze generated in {0:.3f}s'):
-            maze = Cubic().prepare(
-                self.x, self.y, self.z,
-                origin=(-self.x/2, -self.y/2, -self.z/2)
-            ).fill()
-
-        with timed(verbose > 0, 'Writing maze...', 'Maze written in {0:.3f}s'):
-            self.illustrator.draw(maze, filename)
-
-        if processor:
-            processor.process_yafaray(filename)

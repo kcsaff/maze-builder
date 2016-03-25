@@ -124,10 +124,10 @@ def insert_mesh(parent, mesh, material_map=None):
     else:
         top = ET.Element('mesh', **kwargs)
 
-    for vertex in mesh.iter_vertices():
+    for _, vertex in mesh.iter_vertices():
         _insert_location(top, 'p', vertex, mesh.attributes.coordinate_rounding)
 
-    for vertex in mesh.iter_texture_vertices():
+    for _, vertex in mesh.iter_texture_vertices():
         ET.SubElement(top, 'uv', u=str(vertex[0]), v=str(vertex[1]))
 
     material = None

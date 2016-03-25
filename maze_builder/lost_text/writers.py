@@ -124,7 +124,7 @@ class LostTextWriter(object):
 
     def write(self):
         last_text = ''
-        for text in self.states(''):
+        for text in self.states.pipe(''):
             if len(text) > self.limit:
                 break
             last_text = text

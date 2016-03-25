@@ -28,13 +28,13 @@ class ObjDumper(object):
     def dump(self, fp, mesh):
         index_offset = OBJ_INDEX_BASE - mesh.attributes.index_base
 
-        for vertex in mesh.iter_vertices():
+        for _, vertex in mesh.iter_vertices():
             self.write(fp, 'v', *vertex)
 
-        for vertex in mesh.iter_texture_vertices():
+        for _, vertex in mesh.iter_texture_vertices():
             self.write(fp, 'vt', *vertex)
 
-        for vertex in mesh.iter_normal_vertices():
+        for _, vertex in mesh.iter_normal_vertices():
             self.write(fp, 'vn', *vertex)
 
         material = None

@@ -3,6 +3,7 @@ import subprocess
 import os.path
 from .util import timed
 from .random2 import weighted_choice, Choice
+from maze_builder.sewer import Pipeline
 
 
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
@@ -10,6 +11,16 @@ NEW_FILESIZE_LIMIT = '1999kb'
 OUT_FILENAME = 'out.png'
 OUT_YAFARAY = 'out', 'out.tga'
 JPG_FILENAME = 'out{}.jpg'
+
+
+class PipelineBuilder(object):
+    def __init__(self, name, *steps):
+        self.name = name
+        self.pipeline = Pipeline(*steps)
+
+    def build(self, processor, verbose=0, filename=None):
+        methods = {key: getattr(processor, key) for key in dir(processor) if not key.endswith('__')}
+        return self.pipeline.product(verbose, methods)
 
 
 class Processor(object):

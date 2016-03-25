@@ -62,15 +62,15 @@ class MeshBase(object):
 
     def iter_vertices(self):
         for i in range(self.attributes.index_base, self.attributes.index_base + self.count_vertices()):
-            yield self.get_vertex(i)
+            yield i, self.get_vertex(i)
 
     def iter_texture_vertices(self):
         for i in range(self.attributes.index_base, self.attributes.index_base + self.count_texture_vertices()):
-            yield self.get_texture_vertex(i)
+            yield i, self.get_texture_vertex(i)
 
     def iter_normal_vertices(self):
         for i in range(self.attributes.index_base, self.attributes.index_base + self.count_normal_vertices()):
-            yield self.get_normal_vertex(i)
+            yield i, self.get_normal_vertex(i)
 
     def iter_faces(self):
         for i in range(self.attributes.index_base, self.attributes.index_base + self.count_faces()):
@@ -79,7 +79,7 @@ class MeshBase(object):
     def find_limits(self, coords, xbounds=None, ybounds=None, zbounds=None):
         max_limit = -float('inf')
         min_limit = float('inf')
-        for vertex in self.iter_vertices():
+        for _, vertex in self.iter_vertices():
             if xbounds and not xbounds[0] <= vertex[0] <= xbounds[1]:
                 continue
             if ybounds and not ybounds[0] <= vertex[1] <= ybounds[1]:
@@ -146,6 +146,15 @@ class MeshBase(object):
     def count_faces(self):
         raise NotImplementedError
 
+    def replace_vertex(self, index, coords):
+        raise NotImplementedError
+
+    def replace_texture_vertex(self, index, coords):
+        raise NotImplementedError
+
+    def replace_normal_vertex(self, index, coords):
+        raise NotImplementedError
+
     def enter_vertex(self, coords):
         raise NotImplementedError
 
@@ -171,6 +180,13 @@ class MeshBase(object):
         raise NotImplementedError
 
     # High-ish level stuff -- not necessary part of Mesh interface
+
+    def perform_warp(self, warp):
+        for i, v in self.iter_vertices():
+            self.replace_vertex(i, warp(v))
+        for i, v in self.iter_normal_vertices():
+            self.replace_normal_vertex(i, warp(v))
+        return self
 
     def triangle(self, vertices, texture_vertices=None, density=1, material=None):
         """
@@ -279,6 +295,15 @@ class MeshBuilder(MeshBase):
     def get_normal_vertex(self, index):
         return self._get_vertex(index, self.normal_vertex_lookup, self.normal_vertices)
 
+    def replace_vertex(self, index, coords):
+        return self._replace_vertex(index, coords, self.vertex_lookup, self.vertices)
+
+    def replace_texture_vertex(self, index, coords):
+        raise self._replace_vertex(index, coords, self.texture_vertex_lookup, self.texture_vertices)
+
+    def replace_normal_vertex(self, index, coords):
+        raise self._replace_vertex(index, coords, self.normal_vertex_lookup, self.normal_vertices)
+
     def enter_face(self, vertices, texture_vertices=None, normal_vertices=None, material=None):
         self.faces.append(Face(
             tuple(self.force_vertex_index(v) for v in vertices),
@@ -291,6 +316,12 @@ class MeshBuilder(MeshBase):
         return self.faces[index - self.attributes.index_base]
 
     # Internal
+
+    def _replace_vertex(self, index, coords, d, L):
+        coords = self.round_vertex(coords)
+        d.pop(L[index])
+        L[index] = coords
+        d[coords] = index
 
     def _get_vertex(self, index, d, L):
         if isinstance(index, int) and 0 <= index - self.attributes.index_base < len(d):

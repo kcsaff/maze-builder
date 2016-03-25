@@ -1,6 +1,6 @@
 import argparse
 import os.path
-from .processor import Processor
+from .processor import Processor, PipelineBuilder
 import sys
 from collections import namedtuple
 import shutil
@@ -134,13 +134,15 @@ def main(args=None):
 
     # Make & run processor
 
+    from maze_builder.sewer import Choice
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
     from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder, \
-        CubicObjBuilder, CubicYafarayBuilder
+        FilledCubicGenerator
     from maze_builder.cubics.illustrators.template import CubicTemplateIllustrator
     from maze_builder.cubics.illustrators.imaging import ImageBlockIllustratorZoomed
-    from maze_builder.cubics.illustrators.mesh import ObjIllustrator, YafarayIllustrator
+    from maze_builder.cubics.illustrators.mesh import Mesher2D, Warper2D, SceneWrapper, \
+        RandomCameraPlacer, RandomSunMaker, YafaraySaver, ObjSaver
     from maze_builder.lost_text.writers import LostTextWriter
 
     builders = {
@@ -166,32 +168,51 @@ def main(args=None):
         CubicPovBuilder('borg', CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 15,
         SeededPovBuilder('borg2', CubicTemplateIllustrator('borg.pov.jinja2')): 10,
     }
+
     noise_amount = 10
     noise_scale = 2**(noise_amount-3)
     noise_x = 1000 * random.random()
     noise_y = 1000 * random.random()
+
     builders.update({
-        CubicYafarayBuilder(
+        PipelineBuilder(
             'mazehill',
-            YafarayIllustrator(
-                'simple.yafaray.xml',
-                resolution=(1024, 512),
-                width=0.5,
-                height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-                depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-                density=1, smoothing_degrees=35,
-            ), 150, 150): 30,
+            FilledCubicGenerator(150),
+            Mesher2D(wall=random.random),
+            Choice({
+                Warper2D(noise.pnoise2, (noise_amount,), noise_scale/5, 5, (noise_x, noise_y)): 10,
+                (lambda mesh: mesh): 1,
+            }),
+            SceneWrapper(),
+            RandomSunMaker(),
+            RandomCameraPlacer((1024, 512)),
+            YafaraySaver(),
+            'process_yafaray'
+        ): 30
     })
     builders.update({
-        CubicObjBuilder(
+        PipelineBuilder(
             'objtest',
-            ObjIllustrator(
-                width=0.5,
-                height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-                depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-                density=4, smoothing_degrees=35, enclosed=True
-            ), 20, 20): 0,
+            FilledCubicGenerator(20),
+            Mesher2D(wall=0.5),
+            Choice({
+                Warper2D(noise.pnoise2, (noise_amount,), noise_scale/5, 5, (noise_x, noise_y)): 1,
+                (lambda mesh: mesh): 0,
+            }),
+            ObjSaver(),
+            'process_obj'
+        ): 30
     })
+    # builders.update({
+    #     CubicObjBuilder(
+    #         'objtest',
+    #         ObjIllustrator(
+    #             width=0.5,
+    #             height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+    #             depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
+    #             density=4, smoothing_degrees=35, enclosed=True
+    #         ), 20, 20): 0,
+    # })
     processor = Processor(
         builders=builders,
         default_status=LostTextWriter().write,
