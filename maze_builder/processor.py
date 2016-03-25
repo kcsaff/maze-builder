@@ -2,7 +2,7 @@ import random
 import subprocess
 import os.path
 from .util import timed
-from .random2 import weighted_choice, WeightedChoice
+from .random2 import weighted_choice, Choice
 
 
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
@@ -17,7 +17,7 @@ class Processor(object):
         self.args = args
         self.verbose = args.verbose
         self.default_status = default_status
-        self.builders = WeightedChoice.of(builders)
+        self.builders = Choice.of(builders)
 
     def start(self):
         if self.args.tweet:

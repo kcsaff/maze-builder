@@ -1,0 +1,50 @@
+from maze_builder.sewer import MadLibs, Choice
+from maze_builder.lost_text.text_decorations import strike
+
+
+lost_sentence = MadLibs({
+        '{SENTENCE}': 9,
+        '{SENTENCE STRUCK}': 1
+    },
+    STRUCK=strike,
+    SENTENCE={
+        "Am I going in circles?": 1,
+        "It's impossible to guess which way to go.": 1,
+        "I'm just guessing at this point.": 1,
+        "One way's as good as another.": 1,
+        "A map would be nice.": 1,
+        "It's unmappable.": 1,
+        "Are the walls... moving?": 1,
+        "How am I supposed to solve this?": 1,
+        "If only someone could point the way.": 1,
+        "I hope I don't die here.": 1,
+        "This was a mistake.": 1,
+        "Here again?": 1,
+        "I remember a time before all this...": 1,
+        "There's just no way!": 1,
+        "Every place is like every other.": 1,
+        "I'm in a maze of twisty little passages, all alike.": 0.2,
+        "Am I even making progress?": 1,
+        "Will I get out alive?": 1,
+        "Is it still possible to escape?": 1,
+        "Which way did I even come from?": 1,
+        "Where did I come from?": 1,
+        "Where am I going?": 1,
+        "Where should I go?": 1,
+        "Taking some time to find my bearings.": 1,
+        "This is impossible.": 1,
+        "This is taking so long.": 1,
+        "This is so hard.": 1,
+        "I've tried so hard.": 1,
+        "I can't believe this.": 1,
+        "I can't understand it.": 1,
+        "I don't get it.": 1,
+        "Is this progress?": 1,
+        "Off the map.": 1,
+        "That's not on my map!": 1,
+        "Ask for directions? I wish I could.": 1,
+        "I feel I've been here all my life.": 1,
+        "I wonder if anyone remembers me.": 1,
+        "I called down each passage -- but got no response.": 1,
+    }
+)

@@ -1,14 +1,14 @@
-from maze_builder.random2 import weighted_choice, WeightedChoice
+from maze_builder.random2 import weighted_choice, Choice
 
 
 class BlockIllustratorBase(object):
     def __init__(self, junctions=[1], rooms=[0], xwalls=None, ywalls=None, xhalls=None, yhalls=None, margin=0):
-        self.junctions = WeightedChoice.of(junctions)
-        self.rooms = WeightedChoice.of(rooms)
-        self.xwalls = WeightedChoice.of(xwalls or junctions)
-        self.ywalls = WeightedChoice.of(ywalls or junctions)
-        self.xhalls = WeightedChoice.of(xhalls or rooms)
-        self.yhalls = WeightedChoice.of(yhalls or rooms)
+        self.junctions = Choice.of(junctions)
+        self.rooms = Choice.of(rooms)
+        self.xwalls = Choice.of(xwalls or junctions)
+        self.ywalls = Choice.of(ywalls or junctions)
+        self.xhalls = Choice.of(xhalls or rooms)
+        self.yhalls = Choice.of(yhalls or rooms)
         self.margin = margin
 
     def draw(self, cubic):
