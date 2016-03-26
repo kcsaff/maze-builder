@@ -5,6 +5,7 @@ from maze_builder.meshes.obj import dump_obj
 from maze_builder import random2
 from .template import resource
 import random
+from maze_builder.util import timed, is_verbose
 
 import io
 
@@ -34,24 +35,25 @@ class Mesher2D(object):
         return self.draw(cubic)
 
     def draw(self, cubic):
-        mesh = MeshBuilder(**self.attrs)
+        with timed(is_verbose(1), 'Meshing maze...', 'Maze generated in {0:.3f}s'):
+            mesh = MeshBuilder(**self.attrs)
 
-        wall = self.wall() if callable(self.wall) else self.wall
+            wall = self.wall() if callable(self.wall) else self.wall
 
-        for room in cubic.rooms:
-            self._draw_room(cubic, mesh, room, wall)
+            for room in cubic.rooms:
+                self._draw_room(cubic, mesh, room, wall)
 
-        for i in range(int(cubic.maxx - cubic.minx) + 1):
-            x = cubic.minx + i
-            self._draw_room(cubic, mesh, (x, cubic.maxy+1, cubic.minz), wall)
+            for i in range(int(cubic.maxx - cubic.minx) + 1):
+                x = cubic.minx + i
+                self._draw_room(cubic, mesh, (x, cubic.maxy+1, cubic.minz), wall)
 
-        for j in range(int(cubic.maxx - cubic.minx) + 1):
-            y = cubic.miny + j
-            self._draw_room(cubic, mesh, (cubic.maxx+1, y, cubic.minz), wall)
+            for j in range(int(cubic.maxx - cubic.minx) + 1):
+                y = cubic.miny + j
+                self._draw_room(cubic, mesh, (cubic.maxx+1, y, cubic.minz), wall)
 
-        self._draw_room(cubic, mesh, (cubic.maxx+1, cubic.maxy+1, cubic.minz), wall)
+            self._draw_room(cubic, mesh, (cubic.maxx+1, cubic.maxy+1, cubic.minz), wall)
 
-        return mesh
+            return mesh
 
     def _draw_room(self, cubic, mesh, coords, wall):
         x, y, z = coords
@@ -138,18 +140,19 @@ class Warper2D(object):
         self.offset = offset
 
     def __call__(self, mesh):
-        args = self.args() if callable(self.args) else self.args
-        scale = self.scale() if callable(self.scale) else self.scale
-        height = self.height() if callable(self.height) else self.height
-        offx, offy = self.offset() if callable(self.offset) else self.offset
+        with timed(is_verbose(1), 'Warping mesh...', 'Mesh warped in {0:.3f}s'):
+            args = self.args() if callable(self.args) else self.args
+            scale = self.scale() if callable(self.scale) else self.scale
+            height = self.height() if callable(self.height) else self.height
+            offx, offy = self.offset() if callable(self.offset) else self.offset
 
-        def warp(v):
-            x, y, z = v
-            z += height * scale * self.noise(offx + x / scale, offy + y / scale, *args)
-            return x, y, z
+            def warp(v):
+                x, y, z = v
+                z += height * scale * self.noise(offx + x / scale, offy + y / scale, *args)
+                return x, y, z
 
-        mesh.perform_warp(warp)
-        return mesh
+            mesh.perform_warp(warp)
+            return mesh
 
 
 class SceneWrapper(object):
@@ -224,6 +227,6 @@ class YafaraySaver(object):
         self.xml = xml
 
     def __call__(self, scene):
-        scene = Scene()
-        dump_yafaray(self.filename, resource(self.xml), scene, material_map={None: 'defaultMat'})
-        return self.filename
+        with timed(is_verbose(1), 'Saving scene to yafaray XML format...', 'Scene saved in {0:.3f}s'):
+            dump_yafaray(self.filename, resource(self.xml), scene, material_map={None: 'defaultMat'})
+            return self.filename

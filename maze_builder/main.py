@@ -7,6 +7,7 @@ import shutil
 import random
 import math
 import noise
+from .sewer import Choice
 
 
 POVRAY_INI = 'povray.ini'
@@ -31,7 +32,7 @@ DEFAULTS = Settings(
     ini=None,
     include_path=None,
     magick=None,
-    builder=None,
+    builder=Choice.DEFAULT,
     tweet=False,  # Misleading, change this
     yafaray=None,
     yafaray_plugins=None,
@@ -75,7 +76,7 @@ parser.add_argument(
     help='ImageMagick command line tool',
 )
 parser.add_argument(
-    '--builder', '-b', type=str,
+    '--builder', '-b', type=str, default=Choice.DEFAULT,
     help='Force particular builder to be used',
 )
 parser.add_argument(
@@ -146,27 +147,27 @@ def main(args=None):
     from maze_builder.lost_text.writers import LostTextWriter
 
     builders = {
-        CastleBuilder('evil', TemplateIllustrator('evil.pov.jinja2')): 31,
-        CastleBuilder('fantasy', TemplateIllustrator('fantasy.pov.jinja2')): 32,
-        CastleBuilder('escher', TemplateIllustrator('escher.pov.jinja2')): 17,
-        CastleBuilder('brick', TemplateIllustrator('brick.pov.jinja2')): 4,
-        CastleBuilder('pure', TemplateIllustrator('pure.pov.jinja2')): 3,
-        ImageBuilder('bw2d', 506, 253): 3,
-        ImageBuilder('bw2dtilt', 506, 253, illustrator=ImageBlockIllustratorZoomed()): 2,
-        ImageBuilderCombined('colors2d', 512, 512, (
+        CastleBuilder(TemplateIllustrator('evil.pov.jinja2')): 'evil',
+        CastleBuilder(TemplateIllustrator('fantasy.pov.jinja2')): 'fantasy',
+        CastleBuilder(TemplateIllustrator('escher.pov.jinja2')): 'escher',
+        CastleBuilder(TemplateIllustrator('brick.pov.jinja2')): 'brick',
+        CastleBuilder(TemplateIllustrator('pure.pov.jinja2')): 'pure',
+        ImageBuilder(506, 253): 'bw2d',
+        ImageBuilder(506, 253, illustrator=ImageBlockIllustratorZoomed()): 'bw2dtilt',
+        ImageBuilderCombined(512, 512, (
             ImageBlockIllustratorZoomed(hall_colors=[(255,0,0)], size=(506, 253)),
             ImageBlockIllustratorZoomed(hall_colors=[(0,255,0)], size=(506, 253)),
             ImageBlockIllustratorZoomed(hall_colors=[(0,0,255)], size=(506, 253)),
-        ), 'add'): 5,
-        ImageBuilderCombined('pastels2d', 512, 512, (
+        ), 'add'): 'colors2d',
+        ImageBuilderCombined(512, 512, (
             ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
             ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
             ImageBlockIllustratorZoomed(wall_colors=[tuple(int(256*(1-random.random()**2)) for _ in range(3))], size=(506, 253)),
-        ), 'multiply'): 25,
-        CubicPovBuilder('boulders', CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 20,
-        CubicPovBuilder('simple3d', CubicTemplateIllustrator('simple.pov.jinja2'), 50): 30,
-        CubicPovBuilder('borg', CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 15,
-        SeededPovBuilder('borg2', CubicTemplateIllustrator('borg.pov.jinja2')): 10,
+        ), 'multiply'): 'pastels2d',
+        CubicPovBuilder(CubicTemplateIllustrator('boulders.pov.jinja2'), 50): 'boulders',
+        CubicPovBuilder(CubicTemplateIllustrator('simple.pov.jinja2'), 50): 'simple3d',
+        CubicPovBuilder(CubicTemplateIllustrator('borg.pov.jinja2'), 8, 8, 8): 'borg',
+        SeededPovBuilder(CubicTemplateIllustrator('borg.pov.jinja2')): 'borg2',
     }
 
     noise_amount = 10
@@ -176,7 +177,6 @@ def main(args=None):
 
     builders.update({
         PipelineBuilder(
-            'mazehill',
             FilledCubicGenerator(150),
             Mesher2D(wall=random.random),
             Choice({
@@ -188,11 +188,10 @@ def main(args=None):
             RandomCameraPlacer((1024, 512)),
             YafaraySaver(),
             'process_yafaray'
-        ): 30
+        ): 'mazehill'
     })
     builders.update({
         PipelineBuilder(
-            'objtest',
             FilledCubicGenerator(20),
             Mesher2D(wall=0.5),
             Choice({
@@ -201,20 +200,26 @@ def main(args=None):
             }),
             ObjSaver(),
             'process_obj'
-        ): 30
+        ): 'objtest'
     })
-    # builders.update({
-    #     CubicObjBuilder(
-    #         'objtest',
-    #         ObjIllustrator(
-    #             width=0.5,
-    #             height=(lambda x,y: 0.75+noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-    #             depth=(lambda x,y: noise_scale*noise.pnoise2(noise_x+x/5/noise_scale, noise_y+y/5/noise_scale, noise_amount)),
-    #             density=4, smoothing_degrees=35, enclosed=True
-    #         ), 20, 20): 0,
-    # })
+    weights = dict(
+        fantasy=32,
+        escher=17,
+        brick=4,
+        pure=3,
+        bw2d=2,
+        bw2dtilt=3,
+        colors2d=5,
+        pastels2d=25,
+        boulders=20,
+        simple3d=30,
+        borg=15,
+        borg2=10,
+        mazehill=30,
+        objtest=0,
+    )
     processor = Processor(
-        builders=builders,
+        builders=Choice.of(builders).weighting(Choice.DEFAULT, weights),
         default_status=LostTextWriter().write,
         args=args
     )

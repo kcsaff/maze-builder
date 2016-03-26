@@ -33,21 +33,22 @@ import collections
 import re
 import itertools
 import random
+from numbers import Number
 
 
-def _select(obj, blessed=False):
-    if blessed or isinstance(obj, Selector):
-        return _select(obj())
+def _select(obj, tag=None):
+    if isinstance(obj, Selector):
+        return _select(obj(tag=tag))
     else:
         return obj
 
 
-def _pipe(fun, value, *environment):
-    fun = _select(fun)
+def _pipe(fun, value, *environment, tag=None):
+    fun = _select(fun, tag=tag)
     if fun is None:
         return value
     elif isinstance(fun, Pipeline):
-        value = yield from fun.pipe(value, *environment)
+        value = yield from fun.pipe(value, *environment, tag=tag)
     elif callable(fun):
         value = fun(value)
         received = yield value
@@ -56,7 +57,7 @@ def _pipe(fun, value, *environment):
     else:
         for i, obj in enumerate(environment):
             if fun in obj:
-                value = yield from _pipe(_select(obj[fun]), value, *environment[i:])
+                value = yield from _pipe(_select(obj[fun]), value, *environment[i:], tag=tag)
                 break
         else:
             for env in environment:
@@ -70,7 +71,7 @@ class Selector(object):
         self.__value = value
         self.__blessed = blessed
 
-    def __call__(self):
+    def __call__(self, tag=None):
         if self.__blessed:
             return _select(self.__value())
         else:
@@ -93,44 +94,49 @@ class Selector(object):
 
 
 class Choice(Selector):
+    DEFAULT = 'default'
+
     def __init__(self, choices=(), **extras):
         self.choices, self.weights = self.__build_choices_and_weights(choices, **extras)
-        self.__update_total()
+        self.totals = collections.Counter()
+        for weight in self.weights:
+            self.totals.update(weight)
+
+    def tags(self):
+        tags = set()
+        for weight in self.weights:
+            tags.update(weight.keys())
+        return tags
+
+    def weighting(self, tag, weights):
+        for weight in self.weights:
+            weight.setdefault(tag, 0)
+            weight[tag] += sum(w*weight.get(t, 0) for t, w in weights.items())
+        return self
 
     def update(self, choices=(), **extras):
         choices, weights = self.__build_choices_and_weights(choices, **extras)
         self.choices += choices
         self.weights += weights
-        self.__update_total()
+        for weight in self.weights:
+            self.totals.update(weight)
 
-    def __call__(self, filter=None):
-        if self.total is None or filter is not None:
-            choices, weights = zip(*(
-                (choice, weight() if callable(weight) else weight)
-                for choice, weight in zip(self.choices, self.weights)
-                if filter is None or filter(choice)
-            ))
-            total = sum(weights)
-        else:
-            choices, weights, total = self.choices, self.weights, self.total
-
-        if len(choices) == 0:
-            raise KeyError('No items available in WeightedChoice')
-        elif len(choices) == 1:
-            return choices[0]
-        elif total <= 0:
-            return random.choice(choices)
+    def __call__(self, tag=None):
+        tag = tag or self.DEFAULT
+        choices, weights, total = self.choices, self.weights, self.totals.get(tag, 0)
 
         # http://stackoverflow.com/a/17011134/1115497
         threshold = random.uniform(0, total)
         for choice, weight in zip(choices, weights):
-            total -= weight
+            total -= weight.get(tag, 0)
             if total < threshold:
                 return _select(choice)
+        else:
+            raise RuntimeError('Choice is empty')
 
     @classmethod
     def __build_choices_and_weights(cls, choices=(), **extras):
-        if isinstance(choices, dict):
+        if isinstance(choices, collections.Mapping):
             choices = choices.items()
         elif isinstance(choices, str):
             choices = ((choices, 1),)
@@ -138,13 +144,17 @@ class Choice(Selector):
             choices = collections.Counter(choices).items()
 
         choices, weights = zip(*itertools.chain(choices, extras.items()))
-        return choices, weights
 
-    def __update_total(self):
-        if any(callable(weight) for weight in self.weights):
-            self.total = None
-        else:
-            self.total = sum(self.weights)
+        weights = [
+            {cls.DEFAULT: weight} if isinstance(weight, Number)
+            else dict(weight) if isinstance(weight, dict)
+            else {weight: 1} if isinstance(weight, str)
+            else {tag: 1 for tag in weight} if isinstance(weight, collections.Sequence)
+            else dict()
+            for weight in weights
+        ]
+
+        return choices, weights
 
 
 class MadLibs(Selector):
@@ -159,13 +169,13 @@ class MadLibs(Selector):
                 for category, phrase in dict(phrases).items()
             })
 
-    def __call__(self, category=None):
+    def __call__(self, category=None, tag=None):
         if category is None:
             replacement = _select(self.__start)
         else:
             if category is not None:
                 category, *formats = category.split()
-            replacement = self.__get(category)
+            replacement = self.__get(category, tag=tag)
             for format in formats:
                 replacement = self.format(replacement, format)
         return self.__RE_PATTERN.sub(self.__repl_match, str(replacement))
@@ -181,13 +191,13 @@ class MadLibs(Selector):
         else:
             return self(category)
 
-    def __get(self, item):
+    def __get(self, item, tag=None):
         lookup = self.__phrases.get(item)
         if lookup is None:
             lookup = getattr(self, item)
         if lookup is None:
             raise KeyError('No part registered for `{}`'.format(item))
-        return _select(lookup)
+        return _select(lookup, tag=tag)
 
     def __repl_match(self, match):
         return self(match.group(1).strip())
@@ -198,18 +208,18 @@ class Pipeline(object):
         self.__steps = steps
         self.__environment = dict(environment)
 
-    def pipe(self, input, *environment):
+    def pipe(self, input, *environment, tag=None):
         value = input
         for step in self.__steps:
-            step = _select(step)
+            step = _select(step, tag=tag)
             if not step:
                 break
-            value = yield from _pipe(step, value, self, *environment)
+            value = yield from _pipe(step, value, self, *environment, tag=tag)
         return value
 
-    def product(self, input, *environment):
+    def product(self, input, *environment, tag=None):
         result = input
-        for result in self.pipe(input, *environment):
+        for result in self.pipe(input, *environment, tag=tag):
             pass
         return result
 

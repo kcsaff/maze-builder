@@ -2,44 +2,44 @@ from .mesh import MeshBuilder
 import xml.etree.ElementTree as ET
 import io
 import math
-from maze_builder.util import timed
+from maze_builder.util import timed, is_verbose
 
 
 YAFARAY_INDEX_BASE = 0
 
 
-def dump_yafaray(fp, xml, scene, *args, verbose=1, **kwargs):
+def dump_yafaray(fp, xml, scene, *args, **kwargs):
     if isinstance(xml, str):
         xml = ET.ElementTree(ET.fromstring(xml))
 
     root = xml.find('.')
     # Lights
     if scene.background:
-        with timed(verbose, 'Inserting scene background...', 'Background inserted in {0:.3f}s'):
+        with timed(is_verbose(2), 'Inserting scene background...', 'Background inserted in {0:.3f}s'):
             insert_background(root, scene.background)
     if scene.ambience:
-        with timed(verbose, 'Removing old ambiences...', 'Ambiences removed in {0:.3f}s'):
+        with timed(is_verbose(2), 'Removing old ambiences...', 'Ambiences removed in {0:.3f}s'):
             for ambience in root.findall("integrator[@name='default']"):
                 root.remove(ambience)
-        with timed(verbose, 'Inserting scene ambience...', 'Ambience inserted in {0:.3f}s'):
+        with timed(is_verbose(2), 'Inserting scene ambience...', 'Ambience inserted in {0:.3f}s'):
             insert_ambience(root, scene.ambience)
     if scene.lights:
-        with timed(verbose, 'Removing old lights...', 'Lights removed in {0:.3f}s'):
+        with timed(is_verbose(2), 'Removing old lights...', 'Lights removed in {0:.3f}s'):
             for light in root.findall('light'):
                 root.remove(light)
-        with timed(verbose, 'Inserting scene lights...', 'Lights inserted in {0:.3f}s'):
+        with timed(is_verbose(2), 'Inserting scene lights...', 'Lights inserted in {0:.3f}s'):
             for light in scene.lights:
                 insert_light(root, light)
     # Camera
     if scene.camera:
-        with timed(verbose, 'Removing old cameras...', 'Cameras removed in {0:.3f}s'):
+        with timed(is_verbose(2), 'Removing old cameras...', 'Cameras removed in {0:.3f}s'):
             for camera in root.findall('camera'):
                 root.remove(camera)
-        with timed(verbose, 'Inserting scene camera...', 'Camera inserted in {0:.3f}s'):
+        with timed(is_verbose(2), 'Inserting scene camera...', 'Camera inserted in {0:.3f}s'):
             insert_camera(root, scene.camera)
     # Action
     for i, mesh in enumerate(scene.meshes):
-        with timed(verbose, 'Inserting mesh {}...'.format(i+1), 'Mesh inserted in {0:.3f}s'):
+        with timed(is_verbose(1), 'Inserting mesh {}...'.format(i+1), 'Mesh inserted in {0:.3f}s'):
             insert_mesh(root, mesh, *args, **kwargs)
 
     write_kwargs = dict(encoding='utf-8', xml_declaration=True)

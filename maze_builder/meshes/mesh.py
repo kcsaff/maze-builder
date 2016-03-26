@@ -61,20 +61,20 @@ class MeshBase(object):
         return tuple(round(c, rounding) for c in v)
 
     def iter_vertices(self):
-        for i in range(self.attributes.index_base, self.attributes.index_base + self.count_vertices()):
-            yield i, self.get_vertex(i)
+        for i in range(self.count_vertices()):
+            yield i, self.get_vertex(self.attributes.index_base + i)
 
     def iter_texture_vertices(self):
-        for i in range(self.attributes.index_base, self.attributes.index_base + self.count_texture_vertices()):
-            yield i, self.get_texture_vertex(i)
+        for i in range(self.count_texture_vertices()):
+            yield i, self.get_texture_vertex(self.attributes.index_base + i)
 
     def iter_normal_vertices(self):
-        for i in range(self.attributes.index_base, self.attributes.index_base + self.count_normal_vertices()):
-            yield i, self.get_normal_vertex(i)
+        for i in range(self.count_normal_vertices()):
+            yield i, self.get_normal_vertex(self.attributes.index_base + i)
 
     def iter_faces(self):
-        for i in range(self.attributes.index_base, self.attributes.index_base + self.count_faces()):
-            yield self.get_face(i)
+        for i in range(self.count_faces()):
+            yield self.get_face(self.attributes.index_base + i)
 
     def find_limits(self, coords, xbounds=None, ybounds=None, zbounds=None):
         max_limit = -float('inf')
@@ -324,13 +324,13 @@ class MeshBuilder(MeshBase):
         d[coords] = index
 
     def _get_vertex(self, index, d, L):
-        if isinstance(index, int) and 0 <= index - self.attributes.index_base < len(d):
+        if isinstance(index, int) and 0 <= index - self.attributes.index_base < len(L):
             return L[index - self.attributes.index_base]
         else:
             return L[self._enter_vertex(index, d, L)]
 
     def _enter_vertex(self, coords, d, L):
-        if isinstance(coords, int) and 0 <= coords - self.attributes.index_base < len(d):
+        if isinstance(coords, int) and 0 <= coords - self.attributes.index_base < len(L):
             return coords
         else:
             coords = self.round_vertex(coords)

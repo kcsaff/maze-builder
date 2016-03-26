@@ -1,14 +1,13 @@
 from .features import *
 from .castle import *
-from maze_builder.util import timed
+from maze_builder.util import timed, is_verbose
 
 
 POV_FILENAME = 'out.pov'
 
 
 class CastleBuilder(object):
-    def __init__(self, name, illustrator, features=None, castle_class=CastleTwoLevel):
-        self.name = name
+    def __init__(self, illustrator, features=None, castle_class=CastleTwoLevel):
         self.illustrator = illustrator
         self.castle_class = castle_class
         if features is None:
@@ -24,13 +23,13 @@ class CastleBuilder(object):
     def build(self, processor, verbose=0, filename=POV_FILENAME):
         # Generate maze
 
-        with timed(verbose > 0, 'Generating castle...', 'Castle generated in {0:.3f}s'):
+        with timed(is_verbose(1), 'Generating castle...', 'Castle generated in {0:.3f}s'):
             castle = self.castle_class(
                 150, 150, verbose=verbose,
                 feature_factories=self.features
             )
 
-        with timed(verbose > 0, 'Writing castle...', 'Castle written in {0:.3f}s'):
+        with timed(is_verbose(1), 'Writing castle...', 'Castle written in {0:.3f}s'):
             castle.draw(self.illustrator)
             with open(filename, 'w') as f:
                 f.write(self.illustrator.make())

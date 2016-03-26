@@ -1,7 +1,7 @@
 import random
 import subprocess
 import os.path
-from .util import timed
+from .util import timed, verbosity, is_verbose
 from .random2 import weighted_choice, Choice
 from maze_builder.sewer import Pipeline
 
@@ -14,8 +14,7 @@ JPG_FILENAME = 'out{}.jpg'
 
 
 class PipelineBuilder(object):
-    def __init__(self, name, *steps):
-        self.name = name
+    def __init__(self, *steps):
         self.pipeline = Pipeline(*steps)
 
     def build(self, processor, verbose=0, filename=None):
@@ -31,20 +30,22 @@ class Processor(object):
         self.builders = Choice.of(builders)
 
     def start(self):
-        if self.args.tweet:
-            self.tweet(filename=OUT_FILENAME)
-        elif self.args.builder:
+        with verbosity(self.verbose):
+            print(self.verbose)
+            if self.args.tweet:
+                self.tweet(filename=OUT_FILENAME)
+
+            builder = self.args.builder or 'default'
+
             try:
-                builder = self.builders(lambda builder: builder.name == self.args.builder)
-            except KeyError:
-                print('No builder named `{}`. Available builders are:'.format(self.args.builder))
-                for name in sorted(builder.name for builder in self.builders):
+                builder = self.builders(tag=builder)
+            except:
+                print('No builder named `{}`. Available builders are:'.format(builder))
+                for name in sorted(self.builders.tags()):
                     print(' * {}'.format(name))
-                raise RuntimeError('No builder named `{}`'.format(self.args.builder))
+                raise RuntimeError('No builder named `{}`'.format(builder))
             else:
                 builder.build(self, self.verbose)
-        else:
-            self.builders().build(self, self.verbose)
 
     def process_obj(self, filename):
         if self.verbose > 0:
@@ -75,7 +76,7 @@ class Processor(object):
 
         yafaray_args.extend((filename, OUT_YAFARAY[0]))
 
-        with timed(self.verbose, 'Yafaray is rendering maze...', 'Maze rendered in {0:.3f}s'):
+        with timed(is_verbose(1), 'Yafaray is rendering maze...', 'Maze rendered in {0:.3f}s'):
             subprocess.check_call(yafaray_args)
 
         filename = self._convert(OUT_YAFARAY[-1])
@@ -109,7 +110,7 @@ class Processor(object):
             '-P', '-D', '-V', '+FN8'
         ])
 
-        with timed(self.verbose, 'POV-Ray is rendering maze...', 'Maze rendered in {0:.3f}s'):
+        with timed(is_verbose(1), 'POV-Ray is rendering maze...', 'Maze rendered in {0:.3f}s'):
             subprocess.check_call(pov_args)
 
         if self.args.keys:
@@ -137,7 +138,7 @@ class Processor(object):
             filename = self._resize(filename)
 
             with timed(
-                self.verbose > 0,
+                is_verbose(1),
                 'Updating twitter status ({}kb)...'.format(os.path.getsize(filename) // 1024),
                 'Updated status in {0:.3f}s'
             ):
@@ -154,7 +155,7 @@ class Processor(object):
         if not self.args or not self.args.magick:
             raise RuntimeError('No ImageMagick handler registered & it\'s required to convert! Pipeline stopping')
 
-        with timed(self.verbose > 0, 'Converting image...', 'Converted image in {0:.3f}s'):
+        with timed(is_verbose(1), 'Converting image...', 'Converted image in {0:.3f}s'):
             call_args = [
                 self.args.magick, filename, outname
             ]
@@ -170,7 +171,7 @@ class Processor(object):
 
         attempt = 0
         while file_size > TWITTER_FILESIZE_LIMIT and attempt < 5:
-            with timed(self.verbose > 0, 'Needs more jpeg...', 'Resized image in {0:.3f}s'):
+            with timed(is_verbose(1), 'Needs more jpeg...', 'Resized image in {0:.3f}s'):
                 new_filename = JPG_FILENAME.format(attempt)
                 call_args = [
                     self.args.magick, filename,
