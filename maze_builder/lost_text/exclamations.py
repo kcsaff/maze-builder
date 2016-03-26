@@ -94,3 +94,7 @@ def exclaim():
         exclamation = INVERTED_PUNCTUATION[punctuation] + exclamation
 
     return exclamation + punctuation
+
+
+def exclaim_appending(text):
+    return text + ' ' + exclaim()

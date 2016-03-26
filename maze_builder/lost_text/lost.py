@@ -12,7 +12,7 @@ lost_sentence = MadLibs({
         "It's impossible to guess which way to go.": 1,
         "I'm just guessing at this point.": 1,
         "One way's as good as another.": 1,
-        "A map would be nice.": 1,
+        # "A map would be nice.": 1,
         "It's unmappable.": 1,
         "Are the walls... moving?": 1,
         "How am I supposed to solve this?": 1,

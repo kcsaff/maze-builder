@@ -44,3 +44,7 @@ def fix_sentence(sentence):
         if key in sentence:
             sentence = sentence.replace(key, value)
     return sentence
+
+
+if __name__ == '__main__':
+    print(fix_sentence('Maybe I can build a amazing GPS from 3 threads.'))

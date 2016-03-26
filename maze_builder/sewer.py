@@ -172,13 +172,15 @@ class MadLibs(Selector):
     def __call__(self, category=None, tag=None):
         if category is None:
             replacement = _select(self.__start)
+            result = self.__RE_PATTERN.sub(self.__repl_match, str(replacement))
         else:
             if category is not None:
                 category, *formats = category.split()
             replacement = self.__get(category, tag=tag)
+            result = self.__RE_PATTERN.sub(self.__repl_match, str(replacement))
             for format in formats:
-                replacement = self.format(replacement, format)
-        return self.__RE_PATTERN.sub(self.__repl_match, str(replacement))
+                result = self.format(result, format)
+        return result
 
     def format(self, value, format=None):
         formatter = self.__get(format)
