@@ -37,9 +37,13 @@ clue_sentence = MadLibs(
         'advocate': 5,
         'propose': 5,
         'urge': 5,
+        'prescribe': 5,
+        'counsel': 5,
     },
     WARN={
         'warn': 10,
+        'forewarn': 5,
+        'dissuade': 5,
         'caution': 10,
     },
     POINT_TO={
