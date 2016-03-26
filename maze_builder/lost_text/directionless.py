@@ -37,6 +37,7 @@ directionless_sentence = MadLibs({
         'counter-clockwise': 5,
         'widdershins': 1,
         'out of here': 1,
+        'ahead': 1,
     },
     LOOKING={ # North, south, up, down, etc.
         "{}.": 1,
