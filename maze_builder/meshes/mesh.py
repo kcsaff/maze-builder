@@ -2,6 +2,7 @@ from numbers import Number
 import operator
 import numpy, numpy.linalg
 from collections import OrderedDict, namedtuple
+from maze_builder.meshes.vertex_list import VertexList
 
 
 Face = namedtuple('Face', ['vertices', 'texture_vertices', 'normal_vertices', 'material'])
@@ -253,15 +254,18 @@ class MeshBuilder(MeshBase):
     def __init__(self, **attrs):
         super().__init__(**attrs)
 
-        self.vertex_lookup = OrderedDict()
-        self.texture_vertex_lookup = OrderedDict()
-        self.normal_vertex_lookup = OrderedDict()
-
-        self.vertices = list()
-        self.texture_vertices = list()
-        self.normal_vertices = list()
+        self.vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
+        self.texture_vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
+        self.normal_vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
 
         self.faces = list()
+
+    # Override
+
+    def perform_warp(self, warp):
+        self.vertices.warp(warp)
+        self.normal_vertices.warp(warp)
+        return self
 
     # Low-ish level stuff -- necessary part of mesh interface
 
@@ -278,31 +282,31 @@ class MeshBuilder(MeshBase):
         return len(self.faces)
 
     def enter_vertex(self, coords):
-        return self._enter_vertex(coords, self.vertex_lookup, self.vertices)
+        return self._enter_vertex(coords, self.vertices)
 
     def enter_texture_vertex(self, coords):
-        return self._enter_vertex(coords, self.texture_vertex_lookup, self.texture_vertices)
+        return self._enter_vertex(coords, self.texture_vertices)
 
     def enter_normal_vertex(self, coords):
-        return self._enter_vertex(coords, self.normal_vertex_lookup, self.normal_vertices)
+        return self._enter_vertex(coords, self.normal_vertices)
 
     def get_vertex(self, index):
-        return self._get_vertex(index, self.vertex_lookup, self.vertices)
+        return self._get_vertex(index, self.vertices)
 
     def get_texture_vertex(self, index):
-        return self._get_vertex(index, self.texture_vertex_lookup, self.texture_vertices)
+        return self._get_vertex(index, self.texture_vertices)
 
     def get_normal_vertex(self, index):
-        return self._get_vertex(index, self.normal_vertex_lookup, self.normal_vertices)
+        return self._get_vertex(index, self.normal_vertices)
 
     def replace_vertex(self, index, coords):
-        return self._replace_vertex(index, coords, self.vertex_lookup, self.vertices)
+        return self._replace_vertex(index, coords, self.vertices)
 
     def replace_texture_vertex(self, index, coords):
-        raise self._replace_vertex(index, coords, self.texture_vertex_lookup, self.texture_vertices)
+        raise self._replace_vertex(index, coords, self.texture_vertices)
 
     def replace_normal_vertex(self, index, coords):
-        raise self._replace_vertex(index, coords, self.normal_vertex_lookup, self.normal_vertices)
+        raise self._replace_vertex(index, coords, self.normal_vertices)
 
     def enter_face(self, vertices, texture_vertices=None, normal_vertices=None, material=None):
         self.faces.append(Face(
@@ -317,30 +321,20 @@ class MeshBuilder(MeshBase):
 
     # Internal
 
-    def _replace_vertex(self, index, coords, d, L):
-        coords = self.round_vertex(coords)
-        d.pop(L[index])
-        L[index] = coords
-        d[coords] = index
+    def _replace_vertex(self, index, coords, vl):
+        vl[index - self.attributes.index_base] = coords
 
-    def _get_vertex(self, index, d, L):
-        if isinstance(index, int) and 0 <= index - self.attributes.index_base < len(L):
-            return L[index - self.attributes.index_base]
+    def _get_vertex(self, index, vl):
+        if isinstance(index, int) and 0 <= index - self.attributes.index_base < len(vl):
+            return vl[index - self.attributes.index_base]
         else:
-            return L[self._enter_vertex(index, d, L)]
+            return vl[vl.enter(index)]
 
-    def _enter_vertex(self, coords, d, L):
-        if isinstance(coords, int) and 0 <= coords - self.attributes.index_base < len(L):
+    def _enter_vertex(self, coords, vl):
+        if isinstance(coords, int) and 0 <= coords - self.attributes.index_base < len(vl):
             return coords
         else:
-            coords = self.round_vertex(coords)
-            index = d.get(coords, None)
-
-        if index is None:
-            index = self.attributes.index_base + len(d)
-            d[coords] = index
-            L.append(coords)
-        return index
+            return self.attributes.index_base + vl.append(coords)
 
 
 class MeshWarp(MeshBase):
