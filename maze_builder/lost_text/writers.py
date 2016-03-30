@@ -53,7 +53,7 @@ class LostTextWriter(object):
                     lost_sentence=1,
                     directionless_sentence=1,
                     macgyver=3,
-                    clue=5,
+                    clue=6,
                 ),
             ),
             clue=Pipeline(
@@ -89,8 +89,8 @@ class LostTextWriter(object):
                     lost_sentence=2,
                     directionless_sentence=2,
                     finished=1,
-                    macgyver=1,
-                    clue=2,
+                    macgyver=3,
+                    clue=4,
                 )
             ),
             lost_sentence=Pipeline(
