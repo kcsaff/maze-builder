@@ -4,7 +4,7 @@ Builds mazes, ham-fistedly makes them look interesting and posts them on twitter
 
 ## Requirements
 
-1. Python 3.+
+1. Python 3.3+
 2. POV-Ray 3.7
 3. A twitter account
 4. ImageMagick (optional)
