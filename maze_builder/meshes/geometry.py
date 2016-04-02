@@ -181,6 +181,7 @@ class Polygon(object):
         self.vertices = vertices
         self.indices = indices or range(len(vertices))
         self.bbox = None
+        self._centroid = None
 
     def __len__(self):
         return len(self.indices)
@@ -219,5 +220,7 @@ class Polygon(object):
         return area(self, signed=signed)
 
     def centroid(self):
-        return centroid(self)
+        if self._centroid is None:
+            self._centroid = centroid(self)
+        return self._centroid
 

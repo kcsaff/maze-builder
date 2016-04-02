@@ -8,3 +8,11 @@ venv
 out*.pov
 out*.png
 out*.jpg
+world*.png
+world.png
+preview*.png
+trail*.png
+001.xml
+*.obj
+*.tga
+out*.xml

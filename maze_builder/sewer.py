@@ -97,6 +97,7 @@ class Choice(Selector):
     DEFAULT = 'default'
 
     def __init__(self, choices=(), **extras):
+        self.random = random.uniform
         self.choices, self.weights = self.__build_choices_and_weights(choices, **extras)
         self.totals = collections.Counter()
         for weight in self.weights:
@@ -126,7 +127,7 @@ class Choice(Selector):
         choices, weights, total = self.choices, self.weights, self.totals.get(tag, 0)
 
         # http://stackoverflow.com/a/17011134/1115497
-        threshold = random.uniform(0, total)
+        threshold = self.random(0, total)
         for choice, weight in zip(choices, weights):
             total -= weight.get(tag, 0)
             if total < threshold:

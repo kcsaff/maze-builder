@@ -31,7 +31,19 @@ class Border(object):
         return self.indices
 
     def other(self, not_index):
-        if isinstance(not_index, Junction):
+        if isinstance(not_index, Region):
+            not_region = not_index
+            if not_region not in self.regions:
+                raise IndexError(
+                    'Edge returns other region only when given region belongs to the edge: {} is not in {}'.format(
+                        not_region, self.regions
+                    )
+                )
+            for r in self.regions:
+                if r is not not_region:
+                    return r
+
+        elif isinstance(not_index, Junction):
             not_junction = not_index
             not_index = not_junction.index
             if not_index not in self.indices:
@@ -40,8 +52,8 @@ class Border(object):
                         not_junction, self.indices
                     )
                 )
-
             return self.junctionlist[self.indices[1] if self.indices[0] == not_index else self.indices[0]]
+
         else:
             if not_index not in self.indices:
                 raise IndexError(
@@ -83,16 +95,18 @@ class Region(Polygon):
         self.borders = set()
         self.junctionlist = junctionlist
 
+    def add_border(self, border):
+        self.borders.add(border)
+
     @property
     def junctions(self):
         return (self.junctionlist[i] for i in self.indices)
 
     def neighbors(self):
-        used = {self}
-        for junction in self.junctions:
-            for region in junction.regions:
-                if used.add(region):
-                    yield region
+        for border in self.borders:
+            other = border.other(self)
+            if other:
+                yield other
 
 
 class Tiling(object):
@@ -111,10 +125,11 @@ class Tiling(object):
             for edge in region.edges_indices:
                 key = tuple(sorted(edge))
                 if key in self.borders:
-                    self.borders[key].add_region(region)
+                    border = self.borders[key]
                 else:
                     border = border_class(self.vertices, edge, self.junctions)
-                    border.add_region(region)
                     self.borders[key] = border
                     for index in border.indices:
                         self.junctions[index].add_border(border)
+                border.add_region(region)
+                region.add_border(border)
