@@ -112,14 +112,16 @@ class Choice(Selector):
     def weighting(self, tag, weights):
         for weight in self.weights:
             weight.setdefault(tag, 0)
-            weight[tag] += sum(w*weight.get(t, 0) for t, w in weights.items())
+            added_weight = sum(w*weight.get(t, 0) for t, w in weights.items())
+            weight[tag] += added_weight
+            self.totals[tag] += added_weight
         return self
 
     def update(self, choices=(), **extras):
         choices, weights = self.__build_choices_and_weights(choices, **extras)
         self.choices += choices
         self.weights += weights
-        for weight in self.weights:
+        for weight in weights:
             self.totals.update(weight)
 
     def __call__(self, tag=None):
@@ -128,6 +130,7 @@ class Choice(Selector):
 
         # http://stackoverflow.com/a/17011134/1115497
         threshold = self.random(0, total)
+         
         for choice, weight in zip(choices, weights):
             total -= weight.get(tag, 0)
             if total < threshold:
