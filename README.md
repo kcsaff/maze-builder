@@ -1,5 +1,7 @@
 # maze-builder
 
+[![Build Status](https://travis-ci.org/kcsaff/maze-builder.svg?branch=master)](https://travis-ci.org/kcsaff/maze-builder)
+
 Builds mazes, ham-fistedly makes them look interesting and posts them on twitter.
 
 ## Requirements
