@@ -14,6 +14,7 @@ from maze_builder.lost_text.exclamations import exclaim_appending
 from maze_builder.lost_text.day_intro import intro_sentence
 from maze_builder.lost_text.macgyver import macgyver_sentence
 from maze_builder.lost_text.clues import clue_sentence
+from maze_builder.lost_text.quotes import quote_sentence
 
 TWITTER_LIMIT = 140
 TWITTER_LINK_SIZE = 23
@@ -54,6 +55,7 @@ class LostTextWriter(object):
                     directionless_sentence=1,
                     macgyver=3,
                     clue=6,
+                    quote_sentence=4,
                 ),
             ),
             clue=Pipeline(
@@ -91,6 +93,7 @@ class LostTextWriter(object):
                     finished=1,
                     macgyver=3,
                     clue=4,
+                    quote_sentence=2,
                 )
             ),
             lost_sentence=Pipeline(
@@ -109,11 +112,18 @@ class LostTextWriter(object):
                     macgyver=1,
                 )
             ),
+            quote_sentence=Pipeline(
+                quote_sentence.appending,
+                Choice(
+                    finished=2,
+                )
+            ),
             macgyver=Pipeline(
                 macgyver_sentence.appending,
                 Choice(
-                    lost_sentence=2,
-                    finished=2,
+                    lost_sentence=4,
+                    finished=4,
+                    quote_sentence=1,
                 )
             ),
             finished=None,

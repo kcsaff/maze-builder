@@ -118,6 +118,10 @@ def pluralize(item):
     return item
 
 
+def pluralize_verb(verb):
+    return ' '.join(word[:-1] if word.endswith('s') else word for word in verb.split())
+
+
 def strike_all(text):
     strike = STRIKES()
     return ''.join(c + strike for c in str(text))
@@ -131,9 +135,18 @@ def strike(text):
         return strike_all(text[:int((0.2 + 0.8*random.random())*(1+len(text)))])
 
 
+def _first_character_index(sentence, ignored=set('\'" \t\n')):
+    for i, c in enumerate(sentence):
+        if c not in ignored:
+            return i
+    else:
+        return 0
+
+
 def fix_sentence(sentence):
-    if not sentence[0].isupper():
-        sentence = sentence[0].upper() + sentence[1:]
+    first = _first_character_index(sentence)
+    if not sentence[first].isupper():
+        sentence = sentence[:first] + sentence[first].upper() + sentence[first + 1:]
     for key, value in SENTENCE_FIXES.items():
         if key in sentence:
             sentence = sentence.replace(key, value)
