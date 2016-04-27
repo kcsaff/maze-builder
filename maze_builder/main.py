@@ -18,7 +18,7 @@ Settings = namedtuple(
     ['config', 'verbose', 'keys',
      'pov', 'ini', 'include_path',
      'magick',
-     'builder', 'tweet',
+     'builder', 'tweet', 'autofollow',
      'yafaray', 'yafaray_plugins',
      ]
 )
@@ -34,6 +34,7 @@ DEFAULTS = Settings(
     magick=None,
     builder=Choice.DEFAULT,
     tweet=False,  # Misleading, change this
+    autofollow=False,
     yafaray=None,
     yafaray_plugins=None,
 )
@@ -88,6 +89,12 @@ parser.add_argument(
     '--tweet', '-T',
     action='store_true', default=False,
     help='Tweet already rendered image',
+)
+
+parser.add_argument(
+    '--autofollow', '-A',
+    action='store_true', default=False,
+    help='Auto-follow my followers',
 )
 
 
@@ -224,5 +231,8 @@ def main(args=None):
         args=args
     )
 
-    processor.start()
+    if args.autofollow:
+        processor.autofollow()
+    else:
+        processor.start()
 

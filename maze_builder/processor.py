@@ -4,6 +4,7 @@ import os.path
 from .util import timed, verbosity, is_verbose
 from .random2 import weighted_choice, Choice
 from maze_builder.sewer import Pipeline
+import itertools
 
 
 TWITTER_FILESIZE_LIMIT = 2999000 # About 3 Meg, we round down
@@ -28,6 +29,15 @@ class Processor(object):
         self.verbose = args.verbose
         self.default_status = default_status
         self.builders = Choice.of(builders)
+        self._twitter = None
+
+    @property
+    def twitter(self):
+        if self._twitter is None:
+            from maze_builder.bot import bot
+
+            self._twitter = bot(self.args.keys)
+        return self._twitter
 
     def start(self):
         with verbosity(self.verbose):
@@ -116,6 +126,22 @@ class Processor(object):
         if self.args.keys:
             self.tweet(filename=OUT_FILENAME)
 
+    def autofollow(self):
+        import tweepy
+        followers = set(tweepy.Cursor(self.twitter.followers_ids).items())
+        friends = set(tweepy.Cursor(self.twitter.friends_ids).items())
+        print(followers)
+        print(friends)
+
+        print('Need to follow: {}'.format(followers - friends))
+        print('Need to unfollow: {}'.format(friends - followers))
+
+        for user_id in followers - friends:
+            self.twitter.create_friendship(user_id)
+
+        for user_id in friends - followers:
+            self.twitter.destroy_friendship(user_id)
+
     def tweet(self, status=None, filename=None):
         if status is None and self.default_status is not None:
             status = self.default_status() if callable(self.default_status) else self.default_status
@@ -124,10 +150,6 @@ class Processor(object):
             if self.verbose > 0:
                 print('No twitter keys registered, pipeline stopping')
             return
-
-        from maze_builder.bot import bot
-
-        twitter = bot(self.args.keys)
 
         if status:
             kwargs = dict(status=status)
@@ -142,9 +164,9 @@ class Processor(object):
                 'Updating twitter status ({}kb)...'.format(os.path.getsize(filename) // 1024),
                 'Updated status in {0:.3f}s'
             ):
-                twitter.update_with_media(filename, **kwargs)
+                self.twitter.update_with_media(filename, **kwargs)
         elif status:
-            twitter.update_status(**kwargs)
+            self.twitter.update_status(**kwargs)
         else:
             raise RuntimeError('Tweet requires status or filename')
 
