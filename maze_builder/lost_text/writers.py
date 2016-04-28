@@ -3,7 +3,7 @@ import math
 import string
 import random
 from maze_builder.random2 import weighted_choice
-from maze_builder.sewer import Choice, Pipeline
+from maze_builder.sewer import Choice, Pipeline, Selector
 
 from maze_builder.lost_text.directionless import directionless_sentence
 from maze_builder.lost_text.lost import lost_sentence
@@ -15,6 +15,7 @@ from maze_builder.lost_text.day_intro import intro_sentence
 from maze_builder.lost_text.macgyver import macgyver_sentence
 from maze_builder.lost_text.clues import clue_sentence
 from maze_builder.lost_text.quotes import quote_sentence
+from maze_builder.lost_text.nearby import generate_routes
 
 TWITTER_LIMIT = 140
 TWITTER_LINK_SIZE = 23
@@ -56,6 +57,7 @@ class LostTextWriter(object):
                     macgyver=3,
                     clue=6,
                     quote_sentence=4,
+                    nearby=3,
                 ),
             ),
             clue=Pipeline(
@@ -64,6 +66,7 @@ class LostTextWriter(object):
                     finished=4,
                     macgyver=2,
                     pre_generic_room=1,
+                    nearby=1,
                 )
             ),
             negative_status=Pipeline(
@@ -74,6 +77,7 @@ class LostTextWriter(object):
                     generic_room=1,
                     finished=2,
                     macgyver=3,
+                    nearby=1,
                 )
             ),
             pre_generic_room=Pipeline(
@@ -82,6 +86,7 @@ class LostTextWriter(object):
                     generic_room=5,
                     lost_sentence=1,
                     directionless_sentence=1,
+                    nearby=2,
                 )
             ),
             generic_room=Pipeline(
@@ -94,6 +99,7 @@ class LostTextWriter(object):
                     macgyver=3,
                     clue=4,
                     quote_sentence=2,
+                    nearby=2,
                 )
             ),
             lost_sentence=Pipeline(
@@ -102,6 +108,7 @@ class LostTextWriter(object):
                     directionless_sentence=2,
                     finished=2,
                     macgyver=1,
+                    nearby=1,
                 )
             ),
             directionless_sentence=Pipeline(
@@ -110,12 +117,14 @@ class LostTextWriter(object):
                     lost_sentence=2,
                     finished=2,
                     macgyver=1,
+                    nearby=1,
                 )
             ),
             quote_sentence=Pipeline(
                 quote_sentence.appending,
                 Choice(
                     finished=2,
+                    nearby=1,
                 )
             ),
             macgyver=Pipeline(
@@ -123,7 +132,16 @@ class LostTextWriter(object):
                 Choice(
                     lost_sentence=4,
                     finished=4,
-                    quote_sentence=1,
+                    quote_sentence=2,
+                    nearby=1,
+                )
+            ),
+            nearby=Pipeline(
+                lambda text: generate_routes(text, limit),
+                Choice(
+                    lost_sentence=4,
+                    finished=4,
+                    directionless_sentence=2,
                 )
             ),
             finished=None,

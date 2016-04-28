@@ -40,6 +40,8 @@ intro_sentence = MadLibs({
         'Day {} arrives.': 1,
         'Day {}, of course.': 1,
         'Day {} still?': 1,
+        'Day № {}.': 1,
+        'Day #{}.': 1,
     },
     SLIGHT={
         'Day {SLIGHTLY_UNCERTAIN_DAY}?': 20,

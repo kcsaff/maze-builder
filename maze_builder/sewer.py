@@ -82,11 +82,11 @@ class Selector(object):
         if isinstance(obj, Selector):
             return obj
         elif isinstance(obj, str):
-            return cls(obj)
+            return cls(obj, blessed=blessed)
         elif isinstance(obj, collections.Iterable):
             return Choice(obj)
         else:
-            return cls(obj)
+            return cls(obj, blessed=blessed)
 
     @classmethod
     def bless(cls, obj):

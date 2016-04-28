@@ -1,9 +1,11 @@
 from maze_builder.sewer import MadLibs, Choice
 from maze_builder.lost_text.text_decorations import fix_sentence, pluralize, pluralize_verb
+from maze_builder.lost_text.typography import fix_typography
 
 quote_sentence = MadLibs(
-    '{FULL_QUOTE FIXED}',
+    '{FULL_QUOTE FIXED CURLED}',
     FIXED=fix_sentence,
+    CURLED=fix_typography,
     PLURALIZED=pluralize,
     PLURALIZED_VERB=pluralize_verb,
     FULL_QUOTE={
@@ -11,7 +13,7 @@ quote_sentence = MadLibs(
         '{QUOTE}.': 40,
         '"{QUOTE}," according to the {SCRIPTURES}.': 20,
         'Some say, "{QUOTE}."': 20,
-        'I\'ve learned the truth of "{QUOTE}."': 10,
+        'I’ve learned the truth of "{QUOTE}."': 10,
         '{MY_TEACHER} once said, "{QUOTE}."': 10,
         'Remember, "{QUOTE}!"': 20,
     },
@@ -21,15 +23,17 @@ quote_sentence = MadLibs(
     },
     QUOTE={
         '{TOLKIEN}': 20,
-        'if you don\'t get {LOST}, {THEN} you may never be {FOUND}': 7,
+        'if you don’t get {LOST}, {THEN} you may never be {FOUND}': 7,
         '{WALKER}': 10,
         '{ARNOLD}': 10,
-        'in order to {FINDS PLURALIZED_VERB} youself, you need to get {LOST}': 3,
+        'in order to {FINDS PLURALIZED_VERB} yourself, you need to get {LOST}': 3,
         'if you meet {THE_TEACHER} on the {ROAD}, {KILL} {HIM}': 5,
     },
     ROAD={
         'road': 100,
         'way': 50,
+        'route': 20,
+        'path': 50,
     },
     KILL={
         'kill': 100,
@@ -42,8 +46,9 @@ quote_sentence = MadLibs(
     HIM={
         'him': 100,
         'her': 100,
-        'hir': 20,
-        'them': 20,
+        'hir': 50,
+        'zir': 10,
+        'them': 50,
     },
     THEN={
         'there\'s a chance': 20,
@@ -65,8 +70,8 @@ quote_sentence = MadLibs(
         'thou who {FINDS PLURALIZED_VERB} thyself, {LOSES PLURALIZED_VERB} thy {MISERY}': 20,
         'they who {FINDS PLURALIZED_VERB} theirself, {LOSES PLURALIZED_VERB} their {MISERY}': 50,
         'ze who {FINDS} zirself, {LOSES} zir {MISERY}': 10,
-        'bun who {FINDS} bunself, {LOSES} buns {MISERY}': 10,
-        'thon who {FINDS} thonself, {LOSES} thons {MISERY}': 10,
+        'bun who {FINDS} bunself, {LOSES} buns {MISERY}': 5,
+        'thon who {FINDS} thonself, {LOSES} thons {MISERY}': 1,
     },
     WANDER={
         'wander': 100,
@@ -155,9 +160,9 @@ quote_sentence = MadLibs(
         '{THE_TEACHER}': 50,
     },
     MY_MOTHERS={
-        'my {MOTHER}\'s': 100,
-        'my {TEACHER}\'s': 50,
-        '{THE_TEACHER}\'s': 50,
+        'my {MOTHER}’s': 100,
+        'my {TEACHER}’s': 50,
+        '{THE_TEACHER}’s': 50,
     },
     THE_TEACHER={
         'the {TEACHER}': 50,

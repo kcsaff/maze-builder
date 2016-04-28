@@ -41,7 +41,7 @@ PLURALIZERS = [
 ]]
 
 
-SENTENCE_FIXES = {
+PHRASE_FIXES = {
     ' a a': ' an a',
     ' a e': ' an e',
     ' a i': ' an i',
@@ -147,10 +147,17 @@ def fix_sentence(sentence):
     first = _first_character_index(sentence)
     if not sentence[first].isupper():
         sentence = sentence[:first] + sentence[first].upper() + sentence[first + 1:]
-    for key, value in SENTENCE_FIXES.items():
-        if key in sentence:
-            sentence = sentence.replace(key, value)
-    return sentence
+    return fix_phrase(sentence)
+
+
+def fix_phrase(phrase):
+    phrase = ' ' + phrase
+
+    for key, value in PHRASE_FIXES.items():
+        if key in phrase:
+            phrase = phrase.replace(key, value)
+
+    return phrase[1:]
 
 
 if __name__ == '__main__':
