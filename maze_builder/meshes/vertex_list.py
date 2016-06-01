@@ -3,7 +3,7 @@ import collections
 
 
 class VertexList(object):
-    def __init__(self, vertices=None, dims=None, ndigits=4, typecode='d', cache=1024, vertex_class=tuple):
+    def __init__(self, vertices=None, dims=0, ndigits=4, typecode='d', cache=1024, vertex_class=tuple):
         self.dims = dims
         self.ndigits = ndigits
         self.data = array(typecode)
@@ -88,7 +88,7 @@ class VertexList(object):
         )
 
     def _check(self, vertex):
-        if self.dims is None:
+        if not self.dims:
             self.dims = len(vertex)
         elif len(vertex) != self.dims:
             raise RuntimeError('Vertex must be {}D for this vertex list'.format(self.dims))
