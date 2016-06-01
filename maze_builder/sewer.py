@@ -181,10 +181,19 @@ class MadLibs(Selector):
             if category is not None:
                 category, *formats = category.split()
             replacement = self.__get(category, tag=tag)
+            while callable(replacement):
+                replacement = replacement()
             result = self.__RE_PATTERN.sub(self.__repl_match, str(replacement))
             for format in formats:
                 result = self.format(result, format)
         return result
+
+    def __getattr__(self, item):
+        lookup = self.__phrases.get(item)
+        if lookup is not None:
+            return lookup
+        else:
+            raise AttributeError('Attribute {} not in MadLibs object'.format(item))
 
     def format(self, value, format=None):
         formatter = self.__get(format)
@@ -197,10 +206,12 @@ class MadLibs(Selector):
         else:
             return self(category)
 
-    def __get(self, item, tag=None):
-        lookup = self.__phrases.get(item)
-        if lookup is None:
-            lookup = getattr(self, item)
+    def __get(self, item, tag=None, obj=None):
+        lookup = getattr(obj or self, item)
+        if lookup is None and '.' in item:
+            parts = item.split('.', 1)
+            base = self.__get(parts[0], tag=tag)
+            return self.__get(parts[1], tag=tag, obj=base)
         if lookup is None:
             raise KeyError('No part registered for `{}`'.format(item))
         return _select(lookup, tag=tag)

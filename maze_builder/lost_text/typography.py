@@ -7,7 +7,7 @@ QUOTE_PATTERN_GROUP = 1
 PRIME_PATTERNS = [
     re.compile(r'(?<=\d)(\'|′)(?:[^a-zA-Z])'),
     re.compile(r'(?<=\d)(\'\'|"|′′|″)(?:[^a-zA-Z])'),
-    re.compile(r'(?<=\d)(\'\'\'|′′′|‴)(?:[^a-zA-Z])'),
+    re.compile(r'(?<=\d)(\'\'\'|′′′|‴|"\')(?:[^a-zA-Z])'),
     re.compile(r'(?<=\d)(\'\'\'\'|""|′′′′|″″|⁗)(?:[^a-zA-Z])'),
 ]
 
@@ -76,6 +76,21 @@ FINAL_UNICODE = {
 }
 
 
+FINAL_ASCII = {
+    '‘': "'",
+    '’': "'",
+    '“': '"',
+    '”': '"',
+    '…': '...',
+    '′': "'",
+    '″': '"',
+    '‴': '"\'',
+    '⁗': '""',
+    '—': '--',
+    '–': '-',
+}
+
+
 UNICODE_AMERICAN_TYPOGRAPHY = dict(
         quotes=('“', '”'),
         innerquotes=('‘', '’'),
@@ -84,6 +99,7 @@ UNICODE_AMERICAN_TYPOGRAPHY = dict(
         ellipsis='…',
         emdash='—',
         endash='–',
+        final=FINAL_UNICODE.items(),
 )
 
 
@@ -95,6 +111,7 @@ UNICODE_BRITISH_TYPOGRAPHY = dict(
         ellipsis='…',
         emdash=' – ',
         endash='–',
+        final=FINAL_UNICODE.items(),
 )
 
 
@@ -106,6 +123,7 @@ ASCII_AMERICAN_TYPOGRAPHY = dict(
         ellipsis='...',
         emdash=' -- ',
         endash='-',
+        final=FINAL_ASCII.items(),
 )
 
 
@@ -117,6 +135,7 @@ ASCII_BRITISH_TYPOGRAPHY = dict(
         ellipsis='...',
         emdash=' - ',
         endash='-',
+        final=FINAL_ASCII.items(),
 )
 
 
@@ -129,6 +148,7 @@ def fix_typography(
         ellipsis='…',
         emdash='—',
         endash='–',
+        final=FINAL_UNICODE.items(),
 ):
     sentence = quote(sentence, innerquotes, quotes)[1:-1]
     for prime, pattern in reversed(list(zip(primes, PRIME_PATTERNS))):
@@ -141,4 +161,8 @@ def fix_typography(
         sentence = EMDASH_PATTERN.sub(emdash, sentence)
     if endash:
         sentence = ENDASH_PATTERN.sub(endash, sentence)
+    if final:
+        for key, value in final:
+            if key in sentence:
+                sentence = sentence.replace(key, value)
     return sentence

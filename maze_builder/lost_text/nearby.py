@@ -156,6 +156,8 @@ route_phrase = MadLibs(
         'my fears': 100,
         'monsters': 100,
         'many possibilities': 100,
+        'the gods': 10,
+        'demons': 20,
     },
     A_={
         'a ': 100,

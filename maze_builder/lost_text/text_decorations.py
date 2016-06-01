@@ -160,6 +160,94 @@ def fix_phrase(phrase):
     return phrase[1:]
 
 
+ROMAN_NUMERALS_UNICODE_UPPER=[
+    ('ↂ', 10000),
+    ('ↁ', 5000),
+    ('Ⅿ', 1000),
+    ('ⅭⅯ', 900),
+    ('Ⅾ', 500),
+    ('ⅭⅮ', 400),
+    ('Ⅽ', 100),
+    ('ⅩⅭ', 90),
+    ('Ⅼ', 50),
+    ('ⅩⅬ', 40),
+    ('Ⅻ', 12, True),
+    ('Ⅺ', 11, True),
+    ('Ⅹ', 10),
+    ('Ⅸ', 9),
+    ('Ⅷ', 8),
+    ('Ⅶ', 7),
+    ('Ⅵ', 6),
+    ('Ⅴ', 5),
+    ('Ⅳ', 4),
+    ('Ⅲ', 3),
+    ('Ⅱ', 2),
+    ('Ⅰ', 1),
+]
+
+
+ROMAN_NUMERALS_ASCII_UPPER=[
+    ('M', 1000),
+    ('CM', 900),
+    ('D', 500),
+    ('CD', 400),
+    ('C', 100),
+    ('XC', 90),
+    ('L', 50),
+    ('XL', 40),
+    ('X', 10),
+    ('V', 5),
+    ('IV', 4),
+    ('I', 1),
+]
+
+
+def roman_numerals(number, numerals=ROMAN_NUMERALS_UNICODE_UPPER):
+    """
+
+    >>> roman_numerals(456, ROMAN_NUMERALS_ASCII_UPPER)
+    'CDLVI'
+    """
+    parts = list()
+    number = int(number)
+    for item in numerals:
+        if len(item) == 2:
+            numeral, value = item
+            exact = False
+        else:
+            numeral, value, exact = item
+        if exact:
+            if value == number:
+                parts.append(numeral)
+                break
+            else:
+                continue
+        while number >= value:
+            parts.append(numeral)
+            number -= value
+    return ''.join(parts)
+
+
+COUNTING_RODS=[
+    '〇' +''.join(chr(i) for i in range(0x1D360, 0x1D369)),
+    '〇' +''.join(chr(i) for i in range(0x1D369, 0x1D372)),
+]
+
+
+def counting_rods(number, numerals=COUNTING_RODS):
+    parts = list()
+    power = 0
+    if number == 0:
+        return numerals[0][0]
+    while number > 0:
+        numeral_set = numerals[power % len(numerals)]
+        base = len(numeral_set)
+        parts.append(numeral_set[number % base])
+        number //= base
+        power += 1
+    return ''.join(reversed(parts))
+
+
 if __name__ == '__main__':
     print(fix_sentence('Maybe I can build a amazing GPS from 3 threads.'))
 
