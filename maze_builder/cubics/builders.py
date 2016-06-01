@@ -42,7 +42,7 @@ class UnicodeBuilder(object):
 class ImageBuilder(object):
     def __init__(self, width, height=None, illustrator=ImageBlockIllustrator()):
         self.width = width
-        self.height = height
+        self.height = height or width
         self.illustrator = illustrator
 
     def build(self, processor, verbose=0, filename=PNG_FILENAME):
