@@ -22,10 +22,20 @@ class VertexList(object):
             di = item * self.dims
             return self._rounded(self.data[di:di+self.dims])
 
+    def __bool__(self):
+        return self.dims and len(self.data) > 0
+
     def __iter__(self):
-        for di in range(0, self.dims * len(self), self.dims):
-            yield self._rounded(self.data[di:di+self.dims])
-            
+        return self._iter(self._rounded)
+
+    def _iter_unrounded(self):
+        return self._iter(self.vertex_class)
+
+    def _iter(self, wrapper):
+        if len(self) >= 1:
+            for di in range(0, self.dims * len(self), self.dims):
+                yield wrapper(self.data[di:di+self.dims])
+
     def __setitem__(self, key, value):
         if not (0 <= key < len(self)):
             raise IndexError('Index {} is out of range (0, {})'.format(key, len(self)))
@@ -44,15 +54,15 @@ class VertexList(object):
 
     def warp(self, warp):
         self.cache.clear()
-        for di in range(0, self.dims * len(self), self.dims):
-            warped = warp(self.vertex_class(self.data[di:di+self.dims]))
-            for i, c in enumerate(warped, di):
-                self.data[i] = c
+        for i, v in enumerate(self._iter_unrounded()):
+            warped = warp(v)
+            for ci, c in enumerate(warped, i * self.dims):
+                self.data[ci] = c
 
     def warped(self, warp):
         result = self._similar_list()
-        for di in range(0, self.dims * len(self), self.dims):
-            warped = warp(self.vertex_class(self.data[di:di+self.dims]))
+        for v in self._iter_unrounded():
+            warped = warp(v)
             result.append(warped, share=False)
         return result
 
