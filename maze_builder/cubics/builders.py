@@ -146,7 +146,8 @@ class FilledCubicGenerator(object):
 
     def __call__(self, verbose=1):
         with timed(is_verbose(1), 'Generating maze...', 'Maze generated in {0:.3f}s'):
-            return Cubic().prepare(
+            maze = Cubic().prepare(
                 self.x, self.y, self.z,
                 origin=(-self.x//2, -self.y//2, -self.z//2)
             ).fill()
+            return maze
