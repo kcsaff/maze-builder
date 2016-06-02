@@ -33,7 +33,7 @@ class Processor(object):
 
     @property
     def twitter(self):
-        if self._twitter is None:
+        if self.args.keys and self._twitter is None:
             from maze_builder.bot import bot
 
             self._twitter = bot(self.args.keys)
