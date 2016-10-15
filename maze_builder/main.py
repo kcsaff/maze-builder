@@ -185,13 +185,13 @@ def main(args=None):
     builders.update({
         PipelineBuilder(
             FilledCubicGenerator(70),
-            Mesher2D(wall=random.random),
+            Mesher2D(wall=random.random, density=2),
             Choice({
                 Warper2D(
                     noise.pnoise2,
                     (3,),
                     (lambda: 40 * random.random()),
-                    (lambda: random.random() * random.random() * random.random()),
+                    (lambda: random.random() ** 2.5),
                     (noise_x, noise_y)
                 ): 10,
                 (lambda mesh: mesh): 1,
@@ -216,16 +216,17 @@ def main(args=None):
         ): 'objtest'
     })
     weights = dict(
+        evil=20,
         fantasy=32,
         escher=17,
         brick=4,
         pure=3,
         bw2d=2,
-        bw2dtilt=3,
-        colors2d=5,
-        pastels2d=25,
-        boulders=20,
-        simple3d=30,
+        bw2dtilt=2,
+        colors2d=4,
+        pastels2d=10,
+        boulders=15,
+        simple3d=15,
         borg=15,
         borg2=10,
         mazehill=30,
