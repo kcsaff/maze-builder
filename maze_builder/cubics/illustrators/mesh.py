@@ -152,6 +152,7 @@ class Warper2D(object):
                 return x, y, z
 
             mesh.perform_warp(warp)
+            mesh.update_attributes(smoothing_degrees=30)
             return mesh
 
 
@@ -174,8 +175,9 @@ class RandomSunMaker(object):
 
 
 class RandomCameraPlacer(object):
-    def __init__(self, resolution=(1024, 512)):
+    def __init__(self, resolution=(1024, 512), distance_scale=0.75):
         self.resolution = resolution
+        self.distance_scale = distance_scale
 
     def __call__(self, scene):
         mesh = scene.meshes[0]
@@ -183,7 +185,7 @@ class RandomCameraPlacer(object):
         minx, maxx = mesh.find_limits((1, 0, 0))
         miny, maxy = mesh.find_limits((0, 1, 0))
 
-        radius = 1 + random.random() * min((maxx-minx, maxy-miny))
+        radius = 1 + random.random() * min((maxx-minx, maxy-miny)) * self.distance_scale
         camera_location = random2.hemisphere(radius, minz=1)
 
         _, maxz = mesh.find_limits(

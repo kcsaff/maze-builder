@@ -177,17 +177,23 @@ def main(args=None):
         SeededPovBuilder(CubicTemplateIllustrator('borg.pov.jinja2')): 'borg2',
     }
 
-    noise_amount = 10
-    noise_scale = 2**(noise_amount-3)
+    noise_amount = 2
+    noise_scale = 2**noise_amount
     noise_x = 1000 * random.random()
     noise_y = 1000 * random.random()
 
     builders.update({
         PipelineBuilder(
-            FilledCubicGenerator(150),
+            FilledCubicGenerator(70),
             Mesher2D(wall=random.random),
             Choice({
-                Warper2D(noise.pnoise2, (noise_amount,), noise_scale/5, 5, (noise_x, noise_y)): 10,
+                Warper2D(
+                    noise.pnoise2,
+                    (3,),
+                    (lambda: 40 * random.random()),
+                    (lambda: random.random() * random.random() * random.random()),
+                    (noise_x, noise_y)
+                ): 10,
                 (lambda mesh: mesh): 1,
             }),
             SceneWrapper(),
