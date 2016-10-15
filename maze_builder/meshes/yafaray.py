@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import io
 import math
 from maze_builder.util import timed, is_verbose
+from functools import partial
 
 
 YAFARAY_INDEX_BASE = 0
@@ -98,6 +99,40 @@ def insert_camera(parent, camera, default_type='perspective'):
     return elem
 
 
+def iter_mesh(make_element, mesh, material_map):
+    if not callable(make_element):
+        make_element = partial(ET.SubElement, make_element)
+
+    index_offset = YAFARAY_INDEX_BASE - mesh.attributes.index_base
+
+    for _, vertex in mesh.iter_vertices():
+        yield _insert_location(make_element, 'p', vertex, mesh.attributes.coordinate_rounding)
+
+    for _, vertex in mesh.iter_texture_vertices():
+        yield make_element('uv', u=str(vertex[0]), v=str(vertex[1]))
+
+    material = None
+    for face in mesh.iter_faces():
+        face_material = material_map[face.material] if material_map else face.material
+        if face_material and face_material != material:
+            yield make_element('set_material', sval=str(face_material))
+            material = face_material
+
+        kwargs = dict(
+            a=str(face.vertices[0] + index_offset),
+            b=str(face.vertices[1] + index_offset),
+            c=str(face.vertices[2] + index_offset),
+        )
+        if face.texture_vertices:
+            kwargs.update(
+                uv_a=str(face.texture_vertices[0] + index_offset),
+                uv_b=str(face.texture_vertices[1] + index_offset),
+                uv_c=str(face.texture_vertices[2] + index_offset)
+            )
+
+        yield make_element('f', **kwargs)
+
+
 def insert_mesh(parent, mesh, material_map=None):
     """
     Returns a `xml.etree.ElementTree` compatible `<mesh>` element.  You will need to either convert this
@@ -120,42 +155,20 @@ def insert_mesh(parent, mesh, material_map=None):
     if parent:
         mesh_id = str(1 + len(parent.findall('mesh')))
         kwargs.update(id=mesh_id)
-        top = ET.SubElement(parent, 'mesh', **kwargs)
+        top = _wrapped_SubElement(CustomSubElement, parent, 'mesh', **kwargs)
     else:
-        top = ET.Element('mesh', **kwargs)
-
-    for _, vertex in mesh.iter_vertices():
-        _insert_location(top, 'p', vertex, mesh.attributes.coordinate_rounding)
-
-    for _, vertex in mesh.iter_texture_vertices():
-        ET.SubElement(top, 'uv', u=str(vertex[0]), v=str(vertex[1]))
-
-    material = None
-    for face in mesh.iter_faces():
-        face_material = material_map[face.material] if material_map else face.material
-        if face_material and face_material != material:
-            ET.SubElement(top, 'set_material', sval=str(face_material))
-            material = face_material
-
-        kwargs = dict(
-            a=str(face.vertices[0] + index_offset),
-            b=str(face.vertices[1] + index_offset),
-            c=str(face.vertices[2] + index_offset),
-        )
-        if face.texture_vertices:
-            kwargs.update(
-                uv_a=str(face.texture_vertices[0] + index_offset),
-                uv_b=str(face.texture_vertices[1] + index_offset),
-                uv_c=str(face.texture_vertices[2] + index_offset)
-            )
-
-        ET.SubElement(top, 'f', **kwargs)
+        top = CustomSubElement(ET.Element('mesh', **kwargs))
 
     if parent and mesh.attributes.smoothing_degrees is not None:
         ET.SubElement(
             parent, 'smooth',
             ID=mesh_id, angle=str(mesh.attributes.smoothing_degrees)
         )
+
+    top.iter_method = lambda: iter_mesh(top.makeelement, mesh, material_map)
+    #
+    # for _ in iter_mesh(top, mesh, material_map):
+    #     pass
 
     return top
 
@@ -210,10 +223,13 @@ def _insert_color(parent, tag, color, **kwargs):
     return ET.SubElement(parent, tag, r=str(color.r), g=str(color.g), b=str(color.b), a=str(color.a), **kwargs)
 
 
-def _insert_location(parent, tag, location, rounding=None, **kwargs):
+def _insert_location(make_element, tag, location, rounding=None, **kwargs):
+    if not callable(make_element):
+        make_element = partial(ET.SubElement, make_element)
+
     if rounding is not None:
         location = tuple(round(c, rounding) for c in location)
-    return ET.SubElement(parent, tag, x=str(location[0]), y=str(location[1]), z=str(location[2]), **kwargs)
+    return make_element(tag, x=str(location[0]), y=str(location[1]), z=str(location[2]), **kwargs)
 
 
 def _insert_before(parent, path, tag, **kwargs):
@@ -235,3 +251,42 @@ def _get_element_index(root, element):
     else:
         raise ValueError("No '%s' tag found in '%s' children" %
                          (element.tag, root.tag))
+
+
+class CustomSubElement(object):
+    def __init__(self, element):
+        assert self != element
+        self._element = element
+        self.iter_method = None
+
+    def __iter__(self):
+        return self.iter_method() if self.iter_method else iter(self._element)
+
+    def __getattr__(self, item):
+        assert self != self._element
+        return getattr(self._element, item)
+
+    def __setattr__(self, key, value):
+        if 'key'.endswith('_element'):
+            pass
+        else:
+            return setattr(self._element, key, value)
+
+
+def _wrapped_SubElement(cls, parent, tag, attrib={}, **extra):
+    """Subelement factory which creates an element instance, and appends it
+    to an existing parent.
+
+    The element tag, attribute names, and attribute values can be either
+    bytes or Unicode strings.
+
+    *parent* is the parent element, *tag* is the subelements name, *attrib* is
+    an optional directory containing element attributes, *extra* are
+    additional attributes given as keyword arguments.
+
+    """
+    attrib = attrib.copy()
+    attrib.update(extra)
+    element = cls(parent.makeelement(tag, attrib))
+    parent.append(element)
+    return element
