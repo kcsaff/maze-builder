@@ -16,6 +16,7 @@ from maze_builder.lost_text.macgyver import macgyver_sentence
 from maze_builder.lost_text.clues import clue_sentence
 from maze_builder.lost_text.quotes import quote_sentence
 from maze_builder.lost_text.nearby import generate_routes
+from maze_builder.lost_text.missing import missing_sentence
 
 TWITTER_LIMIT = 140
 TWITTER_LINK_SIZE = 23
@@ -49,16 +50,25 @@ class LostTextWriter(object):
             intro=Pipeline(
                 intro_sentence.appending,
                 Choice(
-                    negative_status=5,
-                    pre_generic_room=1,
-                    generic_room=4,
+                    negative_status=4,
+                    pre_generic_room=2,
+                    generic_room=5,
+                    lost_sentence=2,
+                    directionless_sentence=2,
+                    macgyver=2,
+                    clue=5,
+                    quote_sentence=3,
+                    nearby=3,
+                    missing=5,
+                ),
+            ),
+            missing=Pipeline(
+                missing_sentence.appending,
+                Choice(
                     lost_sentence=1,
                     directionless_sentence=1,
-                    macgyver=3,
-                    clue=6,
-                    quote_sentence=4,
-                    nearby=3,
-                ),
+                    finished=3,
+                )
             ),
             clue=Pipeline(
                 clue_sentence.appending,
@@ -78,6 +88,7 @@ class LostTextWriter(object):
                     finished=2,
                     macgyver=3,
                     nearby=1,
+                    missing=3,
                 )
             ),
             pre_generic_room=Pipeline(
@@ -98,8 +109,9 @@ class LostTextWriter(object):
                     finished=1,
                     macgyver=3,
                     clue=4,
-                    quote_sentence=2,
+                    quote_sentence=1,
                     nearby=2,
+                    missing=2,
                 )
             ),
             lost_sentence=Pipeline(
@@ -132,7 +144,7 @@ class LostTextWriter(object):
                 Choice(
                     lost_sentence=4,
                     finished=4,
-                    quote_sentence=2,
+                    quote_sentence=1,
                     nearby=1,
                 )
             ),

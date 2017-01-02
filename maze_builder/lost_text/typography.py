@@ -5,15 +5,15 @@ QUOTE_PATTERN = re.compile(r'(?:\s|^|\p)(\'\S.*\S\'|"\S.*\S"|“.*”|‘.*’)(
 QUOTE_PATTERN_GROUP = 1
 
 PRIME_PATTERNS = [
-    re.compile(r'(?<=\d)(\'|′)(?:[^a-zA-Z])'),
-    re.compile(r'(?<=\d)(\'\'|"|′′|″)(?:[^a-zA-Z])'),
-    re.compile(r'(?<=\d)(\'\'\'|′′′|‴|"\')(?:[^a-zA-Z])'),
-    re.compile(r'(?<=\d)(\'\'\'\'|""|′′′′|″″|⁗)(?:[^a-zA-Z])'),
+    re.compile(r'(?<=\d)(\'|′)(?=[^a-zA-Z])'),
+    re.compile(r'(?<=\d)(\'\'|"|′′|″)(?=[^a-zA-Z])'),
+    re.compile(r'(?<=\d)(\'\'\'|′′′|‴|"\')(?=[^a-zA-Z])'),
+    re.compile(r'(?<=\d)(\'\'\'\'|""|′′′′|″″|⁗)(?=[^a-zA-Z])'),
 ]
 
 ELLIPSIS_PATTERN = re.compile(r'\.\.\.|…')
 
-APOSTROPHE_PATTERN = re.compile(r'(?<=\w)(\'|′)(?:\s|[a-z]|$)')
+APOSTROPHE_PATTERN = re.compile(r'(?<=\w)(\'|′)(?=\s|[a-z]|$)')
 
 EMDASH_PATTERN = re.compile(r'[ ]?(--+|—)[ ]?|[ ](–|-)[ ]')
 

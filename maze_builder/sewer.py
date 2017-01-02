@@ -162,7 +162,7 @@ class Choice(Selector):
 
 
 class MadLibs(Selector):
-    __RE_PATTERN = re.compile(r'\{\s*(\w+(\s*\w+)*)\s*\}')
+    __RE_PATTERN = re.compile(r'\{\s*(\w+(\+)?(\s*\w+)*)\s*\}')
 
     def __init__(self, start, *phrasesets, **extras):
         self.__start = Selector.of(start)
@@ -172,6 +172,7 @@ class MadLibs(Selector):
                 category: Selector.of(phrase)
                 for category, phrase in dict(phrases).items()
             })
+        self.__memory = dict()
 
     def __call__(self, category=None, tag=None):
         if category is None:
@@ -207,14 +208,18 @@ class MadLibs(Selector):
             return self(category)
 
     def __get(self, item, tag=None, obj=None):
-        lookup = getattr(obj or self, item)
+        lookup = getattr(obj or self, item, None)
         if lookup is None and '.' in item:
             parts = item.split('.', 1)
             base = self.__get(parts[0], tag=tag)
             return self.__get(parts[1], tag=tag, obj=base)
+        if lookup is None and item.endswith('+'):
+            return self.__memory[item[:-1]]
         if lookup is None:
             raise KeyError('No part registered for `{}`'.format(item))
-        return _select(lookup, tag=tag)
+        result = _select(lookup, tag=tag)
+        self.__memory[item] = result
+        return result
 
     def __repl_match(self, match):
         return self(match.group(1).strip())

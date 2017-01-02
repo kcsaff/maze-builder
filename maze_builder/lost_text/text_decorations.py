@@ -122,6 +122,73 @@ def pluralize_verb(verb):
     return ' '.join(word[:-1] if word.endswith('s') else word for word in verb.split())
 
 
+IRREGULAR_PAST_PARTICIPLES = {
+    'bear': 'borne',
+    'bite': 'bitten',
+    'break': 'broken',
+    'bring': 'brought',
+    'catch': 'caught',
+    'choose': 'chosen',
+    'do': 'done',
+    'drink': 'drunk',
+    'drive': 'driven',
+    'eat': 'eaten',
+    'fall': 'fallen',
+    'feel': 'felt',
+    'fly': 'flown',
+    'freeze': 'frozen',
+    'get': 'gotten',
+    'go': 'gone',
+    'know': 'known',
+    'lay': 'laid',
+    'lead': 'led',
+    'lend': 'lent',
+    'lie': 'lain',
+    'lose': 'lost',
+    'ride': 'ridden',
+    'ring': 'rung',
+    'rise': 'risen',
+    'run': 'run',
+    'say': 'said',
+    'see': 'seen',
+    'shake': 'shaken',
+    'sing': 'sung',
+    'sink': 'sunk',
+    'sit': 'sat',
+    'sleep': 'slept',
+    'speak': 'spoken',
+    'steal': 'stolen',
+    'swim': 'swum',
+    'take': 'taken',
+    'teach': 'taught',
+    'throw': 'thrown',
+    'wear': 'worn',
+    'win': 'won',
+    'write': 'written',
+}
+UNCHANGING_PAST_PARTICIPLES = {
+    'become', 'begun', 'come', 'set',
+}
+
+
+def past_participle(verb):
+    if verb in UNCHANGING_PAST_PARTICIPLES:
+        return verb
+    elif verb in IRREGULAR_PAST_PARTICIPLES:
+        return IRREGULAR_PAST_PARTICIPLES[verb]
+    elif verb.endswith('e'):
+        return verb + 'd'
+    else:
+        return verb + 'ed'
+
+
+def gerund(verb):
+    if verb.endswith('e') and verb[-2:-1] not in 'aeiou':
+        return verb[:-1] + 'ing'
+    else:
+        return verb + 'ing'
+
+
 def strike_all(text):
     strike = STRIKES()
     return ''.join(c + strike for c in str(text))
