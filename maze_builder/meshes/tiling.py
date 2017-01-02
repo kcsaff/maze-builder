@@ -1,4 +1,4 @@
-from maze_builder.meshes.vertex_list import VertexList
+from vertexarray import VertexArray
 from maze_builder.meshes.geometry import Polygon
 
 
@@ -114,7 +114,7 @@ class Tiling(object):
             self, vertices, polygons,
             junction_class=Junction, border_class=Border, region_class=Region
     ):
-        self.vertices = VertexList(vertices)
+        self.vertices = VertexArray(vertices)
 
         self.borders = dict()
         self.junctions = [junction_class(self.vertices, i) for i in range(len(self.vertices))]
