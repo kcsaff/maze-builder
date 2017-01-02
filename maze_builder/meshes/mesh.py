@@ -249,6 +249,21 @@ class MeshBase(object):
                 )
         return self
 
+    def cuboid(self, vertices, texture_vertices=None, density=1, material=None):
+        vo, v0, v1, v2 = tuple(self.force_vertex_coords(v) for v in vertices)
+        self.rectangle((vo, v0, v1), texture_vertices, density, material)
+        self.rectangle((vo, v1, v2), texture_vertices, density, material)
+        self.rectangle((vo, v2, v0), texture_vertices, density, material)
+
+        v01 = _local_coordinates(vo, v0, v1)
+        v12 = _local_coordinates(vo, v1, v2)
+        v20 = _local_coordinates(vo, v2, v0)
+
+        self.rectangle((v0, v20, v01), texture_vertices, density, material)
+        self.rectangle((v1, v01, v12), texture_vertices, density, material)
+        self.rectangle((v2, v12, v20), texture_vertices, density, material)
+        return self
+
 
 class MeshBuilder(MeshBase):
     def __init__(self, **attrs):

@@ -126,6 +126,9 @@ class Processor(object):
         if self.args.keys:
             self.tweet(filename=OUT_FILENAME)
 
+    def tweet_image(self, filename):
+        return self.tweet(filename=filename)
+
     def autofollow(self):
         import tweepy
         followers = set(tweepy.Cursor(self.twitter.followers_ids).items())

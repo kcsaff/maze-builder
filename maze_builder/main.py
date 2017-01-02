@@ -145,12 +145,18 @@ def main(args=None):
     from maze_builder.sewer import Choice
     from maze_builder.castles.builder import CastleBuilder
     from maze_builder.castles.illustrators import TemplateIllustrator
-    from maze_builder.cubics.builders import ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder, \
-        FilledCubicGenerator
+    from maze_builder.cubics.builders import (
+        ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder,
+        FilledCubicGenerator, ImageSaver
+    )
     from maze_builder.cubics.illustrators.template import CubicTemplateIllustrator
-    from maze_builder.cubics.illustrators.imaging import ImageBlockIllustratorZoomed
-    from maze_builder.cubics.illustrators.mesh import Mesher2D, Warper2D, SceneWrapper, \
+    from maze_builder.cubics.illustrators.imaging import (
+        ImageBlockIllustratorZoomed, ImageLineIllustrator
+    )
+    from maze_builder.cubics.illustrators.mesh import (
+        Mesher2D, Warper2D, SceneWrapper,
         RandomCameraPlacer, RandomSunMaker, YafaraySaver, ObjSaver
+    )
     from maze_builder.lost_text.writers import LostTextWriter
 
     builders = {
@@ -215,6 +221,20 @@ def main(args=None):
             'process_obj'
         ): 'objtest'
     })
+    builders.update({
+        PipelineBuilder(
+            FilledCubicGenerator(50, 25, features=Choice({
+                tuple([(random.randrange(3, 15),)
+                  for _ in range(random.randrange(15))]): 10,
+                tuple([(7,)] * random.randrange(15)): 5,
+            })),
+            ImageLineIllustrator(
+                8, 2,
+                features='/Users/kcsaff/Downloads/e1-png-bw (1).zip'),
+            ImageSaver(),
+            # 'tweet_image'
+        ): 'emojis'
+    })
     weights = dict(
         evil=20,
         fantasy=32,
@@ -231,6 +251,7 @@ def main(args=None):
         borg2=10,
         mazehill=30,
         objtest=0,
+        emojis=35,
     )
     processor = Processor(
         builders=Choice.of(builders).weighting(Choice.DEFAULT, weights),

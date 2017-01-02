@@ -139,15 +139,33 @@ class SeededPovBuilder(object):
 
 
 class FilledCubicGenerator(object):
-    def __init__(self, x, y=None, z=1):
+    def __init__(self, x, y=None, z=1, features=[]):
         self.x = x
         self.y = y or x
         self.z = z
+        self.features = features
 
     def __call__(self, verbose=1):
         with timed(is_verbose(1), 'Generating maze...', 'Maze generated in {0:.3f}s'):
             maze = Cubic().prepare(
                 self.x, self.y, self.z,
                 origin=(-self.x//2, -self.y//2, -self.z//2)
-            ).fill()
+            )
+            features = self.features
+            while callable(features):
+                features = features()
+            for feature in features:
+                while callable(feature):
+                    feature = feature()
+                maze.request_feature(*feature)
+            maze.fill()
             return maze
+
+
+class ImageSaver(object):
+    def __init__(self, filename=PNG_FILENAME):
+        self.filename = filename
+
+    def __call__(self, image):
+        image.save(self.filename)
+        return self.filename

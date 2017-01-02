@@ -49,6 +49,12 @@ class Feature(object):
         for room in self.rooms:
             room.feature = self
         self.name = name
+        self.minx = min((room.x for room in self.rooms))
+        self.maxx = max((room.x for room in self.rooms))
+        self.miny = min((room.y for room in self.rooms))
+        self.maxy = max((room.y for room in self.rooms))
+        self.minz = min((room.z for room in self.rooms))
+        self.maxz = max((room.z for room in self.rooms))
 
 
 class Cubic(object):
@@ -71,9 +77,11 @@ class Cubic(object):
 
     def request_feature(self, width, length=None, height=1, name=None, attempts=20, connected=True):
         length = length or width
-        rooms = list(self.rooms.values())
+        allrooms = list(self.rooms.values())
+        print(allrooms)
         for _ in range(attempts):
-            r = random.choice(rooms)
+            r = random.choice(allrooms)
+            print((len(allrooms), r))
             rooms = [self.get_room(c, make=False) for c in r.coords_boxing(width, length, height)]
             if not all(rooms):
                 continue
@@ -83,11 +91,15 @@ class Cubic(object):
                 self.topology.force(*self.topology.routes_connecting(rooms))
             feature = Feature(rooms, name)
             self.features.append(feature)
+            break
         return self
 
     def get_room(self, coords, make=True):
         if len(coords) == 2:
-            coords += (0,)
+            if self.minz < INF:
+                coords += (self.minz,)
+            else:
+                coords += (0,)
         if coords not in self.rooms and make:
             room = Room(*coords)
             self.rooms[coords] = room
