@@ -2,7 +2,7 @@ from numbers import Number
 import operator
 import numpy, numpy.linalg
 from collections import OrderedDict, namedtuple
-from maze_builder.meshes.vertex_list import VertexList
+from vertexarray import VertexArray
 
 
 Face = namedtuple('Face', ['vertices', 'texture_vertices', 'normal_vertices', 'material'])
@@ -254,9 +254,9 @@ class MeshBuilder(MeshBase):
     def __init__(self, **attrs):
         super().__init__(**attrs)
 
-        self.vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
-        self.texture_vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
-        self.normal_vertices = VertexList(ndigits=self.attributes.coordinate_rounding)
+        self.vertices = VertexArray(ndigits=self.attributes.coordinate_rounding)
+        self.texture_vertices = VertexArray(ndigits=self.attributes.coordinate_rounding)
+        self.normal_vertices = VertexArray(ndigits=self.attributes.coordinate_rounding)
 
         self.faces = list()
 

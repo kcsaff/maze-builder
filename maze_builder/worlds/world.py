@@ -1,7 +1,6 @@
 #  Following roughly http://www-cs-students.stanford.edu/~amitp/game-programming/polygon-map-generation/
 import random
 from pyhull.voronoi import VoronoiTess
-from maze_builder.meshes.vertex_list import VertexList
 from maze_builder.meshes.tiling import Tiling, Junction, Border, Region
 from maze_builder.meshes.quadtree import StaticQuadTree
 from maze_builder.meshes.geometry import BoundingBox
