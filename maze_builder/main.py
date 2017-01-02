@@ -238,7 +238,7 @@ def main(args=None):
                 8, 2,
                 features=args.emojis),
             ImageSaver(),
-            # 'tweet_image'
+            'tweet_image'
         ): 'emojis'
     })
     weights = dict(
