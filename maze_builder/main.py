@@ -20,6 +20,7 @@ Settings = namedtuple(
      'magick',
      'builder', 'tweet', 'autofollow',
      'yafaray', 'yafaray_plugins',
+     'emojis',
      ]
 )
 
@@ -37,6 +38,7 @@ DEFAULTS = Settings(
     autofollow=False,
     yafaray=None,
     yafaray_plugins=None,
+    emojis=None,
 )
 
 
@@ -59,6 +61,10 @@ parser.add_argument(
 parser.add_argument(
     '--keys', '-k', type=str,
     help='Keys file needed to post to Twitter',
+)
+parser.add_argument(
+    '--emojis', type=str, default=None,
+    help='Path to emoji zip file',
 )
 parser.add_argument(
     '--pov', '-P', type=str,
@@ -230,7 +236,7 @@ def main(args=None):
             })),
             ImageLineIllustrator(
                 8, 2,
-                features='/Users/kcsaff/Downloads/e1-png-bw (1).zip'),
+                features=args.emojis),
             ImageSaver(),
             # 'tweet_image'
         ): 'emojis'
