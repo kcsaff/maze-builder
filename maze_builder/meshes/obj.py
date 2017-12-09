@@ -59,3 +59,20 @@ def dump_obj(fp, mesh):
             ObjDumper().dump(f, mesh)
     else:
         ObjDumper().dump(fp, mesh)
+
+
+def read_obj(filename):
+    mb = MeshBuilder()
+    with open(filename, 'r') as f:
+        for line in f:
+            if not line or not line.strip():
+                continue
+            parts = line.split()
+            if parts[0] == 'v':
+                args = tuple(float(a) for a in parts[1:])
+                mb.vertices.append(args, share=False)
+            elif parts[0] == 'f':
+                args = tuple(int(a)-1 for a in parts[1:])
+                for i in range(1, len(args)-1):
+                    mb.enter_face((args[0], args[i], args[i+1]))
+    return mb

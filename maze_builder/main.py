@@ -153,17 +153,20 @@ def main(args=None):
     from maze_builder.castles.illustrators import TemplateIllustrator
     from maze_builder.cubics.builders import (
         ImageBuilder, CubicPovBuilder, ImageBuilderCombined, SeededPovBuilder,
-        FilledCubicGenerator, ImageSaver
+        FilledCubicGenerator, ImageSaver, TextSaver
     )
     from maze_builder.cubics.illustrators.template import CubicTemplateIllustrator
     from maze_builder.cubics.illustrators.imaging import (
         ImageBlockIllustratorZoomed, ImageLineIllustrator
     )
     from maze_builder.cubics.illustrators.mesh import (
-        Mesher2D, Warper2D, SceneWrapper,
-        RandomCameraPlacer, RandomSunMaker, YafaraySaver, ObjSaver
+        Mesher2D, Warper2D, SceneWrapper, MeshFeatures,
+        RandomCameraPlacer, RandomSunMaker, YafaraySaver, ObjSaver,
+        MultiMesher
+
     )
     from maze_builder.lost_text.writers import LostTextWriter
+    from maze_builder.meshes.material import read_mtl
 
     builders = {
         CastleBuilder(TemplateIllustrator('evil.pov.jinja2')): 'evil',
@@ -229,7 +232,7 @@ def main(args=None):
     })
     builders.update({
         PipelineBuilder(
-            FilledCubicGenerator(50, 25, features=Choice({
+            FilledCubicGenerator(50, 25, chambers=Choice({
                 tuple([(random.randrange(3, 15),)
                   for _ in range(random.randrange(15))]): 10,
                 tuple([(7,)] * random.randrange(15)): 5,
@@ -240,6 +243,55 @@ def main(args=None):
             ImageSaver(),
             'tweet_image'
         ): 'emojis'
+    })
+    builders.update({
+        PipelineBuilder(
+            FilledCubicGenerator(50, 50, chambers=[(7,)] * 10),
+            # Choice({
+            #     tuple([(random.randrange(3, 15),)
+            #       for _ in range(random.randrange(15))]): 10,
+            #     tuple([(7,)] * random.randrange(15)): 5,
+            # })),
+            Mesher2D(wall=0.5,
+                     features=MeshFeatures(
+                         '/users/kcsaff/Downloads/bunny.obj'
+                     )),
+            SceneWrapper(),
+            RandomSunMaker(),
+            RandomCameraPlacer((1024, 512)),
+            YafaraySaver(),
+            'process_yafaray'
+        ): 'ofeatures'
+    })
+    builders.update({
+        PipelineBuilder(
+            FilledCubicGenerator(70),
+            MultiMesher((
+                Mesher2D(wall=0.25, height=1,
+                    material=read_mtl(
+                        '/users/kcsaff/Downloads/hedge_obj/hedge.mtl')
+                         ['hedge_OUT']
+                ),
+                Mesher2D(wall=0.23, height=0.98,
+                    material=read_mtl(
+                        '/users/kcsaff/Downloads/hedge_obj/hedge.mtl')
+                         ['hedge_IN']
+                ),
+            )),
+            SceneWrapper(),
+            RandomSunMaker(),
+            RandomCameraPlacer((1024, 512)),
+            YafaraySaver(),
+            'process_yafaray'
+        ): 'hedge'
+    })
+    builders.update({
+        PipelineBuilder(
+            FilledCubicGenerator(50, 50, barriers=[(7,)] * 10),
+            Mesher2D(wall=random.random, density=2),
+            TextSaver('sunk.pov'),
+            'process_pov'
+        ): 'sunk'
     })
     weights = dict(
         evil=20,
@@ -258,6 +310,9 @@ def main(args=None):
         mazehill=30,
         objtest=0,
         emojis=35,
+        ofeatures=0,
+        sunk=0,
+        hedge=0,
     )
     processor = Processor(
         builders=Choice.of(builders).weighting(Choice.DEFAULT, weights),

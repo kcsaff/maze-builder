@@ -67,6 +67,11 @@ class Topology(object):
                 self.join(route.rooms)
         return routes
 
+    def forget(self, *routes):
+        routes = [self._internalize(route) for route in routes]
+        for route in routes:
+            self.known_routes.discard(route)
+
     def routes_connecting(self, rooms):
         for pair in itertools.combinations(rooms, 2):
             if pair in self.known_room_routes:

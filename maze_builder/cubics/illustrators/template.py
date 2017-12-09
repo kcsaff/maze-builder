@@ -15,8 +15,11 @@ def template(template_name, **kwargs):
 
 
 class CubicTemplateIllustrator(object):
-    def __init__(self, template='satellite.pov.jinja2'):
+    def __init__(self, template='simple.pov.jinja2'):
         self.template = template
+
+    def __call__(self, cubic):
+        return self.draw(cubic)
 
     def draw(self, cubic):
         return template(

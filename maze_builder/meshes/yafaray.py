@@ -100,7 +100,6 @@ def matches(child, tag, **attrib):
     return True
 
 
-
 def dump_yafaray(filename, xml, scene, *args, **kwargs):
     root = Element.deepcopy(ET.fromstring(xml))
 
@@ -180,6 +179,10 @@ def insert_camera(parent, camera, default_type='perspective'):
     elem.child('resy', ival=str(int(camera.resolution[1])))
 
     return elem
+
+
+def insert_material(parent, material):
+    pass
 
 
 def insert_mesh(parent, mesh, material_map=None):

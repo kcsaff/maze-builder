@@ -1,0 +1,83 @@
+#version 3.7;
+#include "colors.inc"
+#include "stones1.inc"
+#include "stones2.inc"
+#include "textures.inc"
+
+#declare RT=seed({{ seed }});
+#declare R1=seed(1);
+#declare HALL=0.05;
+#declare WALL=1-2*HALL;
+#declare HEIGHT=0.005;
+#declare DEPTH=-HEIGHT;
+
+#declare DefaultTexture=texture { pigment { White } };
+
+background { color Black }
+camera {
+    right x*image_width/image_height // Square pixels
+    location <7+7*rand(RT), HEIGHT+0.002, 7+7*rand(RT)>
+    look_at  <3, HEIGHT+0.001, 3>
+    rotate <-5+10*rand(R1), 0, 0>
+    rotate <0, 0, -5+10*rand(R1)>
+    rotate <0, 360*rand(R1), 0>
+}
+
+light_source {
+    <-30, 200, 140>
+#if (rand(RT) < 0.95)
+    color White
+#else
+    color rgb <1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT), 1-rand(RT)*rand(RT)>
+#end
+}
+
+global_settings {
+    assumed_gamma 1.0
+    radiosity {
+      pretrace_start 0.08
+      pretrace_end   0.01
+      count 150
+      nearest_count 10
+      error_bound 0.5
+      recursion_limit 3
+      low_error_factor 0.5
+      gray_threshold 0.0
+      minimum_reuse 0.005
+      maximum_reuse 0.2
+      brightness 1
+      adc_bailout 0.005
+    }
+  }
+
+plane { y, 0 texture { Water } }
+
+#macro MakeHall(xd, yd)
+    box {
+        <-xd/2-HALL, DEPTH, -yd/2-HALL>, <xd/2+HALL, HEIGHT, yd/2+HALL>
+        // rotate <0, 90, 0>
+        texture { DefaultTexture }
+    }
+#end
+
+{% for hall in connections -%}
+    {%- set x0 = hall.rooms[0].x -%}
+    {%- set x1 = hall.rooms[1].x -%}
+    {%- if x1 < x0 -%}
+        {%- set x0, x1 = x1, x0 -%}
+    {%- endif -%}
+    {%- set xc = (x1 + x0)/2 -%}
+    {%- set xd = x1 - x0 -%}
+    {%- set y0 = hall.rooms[0].y -%}
+    {%- set y1 = hall.rooms[1].y -%}
+    {%- if y1 < y0 -%}
+        {%- set y0, y1 = y1, y0 -%}
+    {%- endif -%}
+    {%- set yd = y1 - y0 -%}
+    {%- set yc = (y1 + y0)/2 -%}
+    object {
+        MakeHall({{ xd }}, {{ yd }})
+        translate <+{{ xc }}, 0, +{{ yc }}>
+        texture { DefaultTexture }
+    }
+{% endfor %}

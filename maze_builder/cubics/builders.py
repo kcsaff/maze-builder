@@ -139,11 +139,12 @@ class SeededPovBuilder(object):
 
 
 class FilledCubicGenerator(object):
-    def __init__(self, x, y=None, z=1, features=[]):
+    def __init__(self, x, y=None, z=1, chambers=[], barriers=[]):
         self.x = x
         self.y = y or x
         self.z = z
-        self.features = features
+        self.chambers = chambers
+        self.barriers = barriers
 
     def __call__(self, verbose=1):
         with timed(is_verbose(1), 'Generating maze...', 'Maze generated in {0:.3f}s'):
@@ -151,13 +152,23 @@ class FilledCubicGenerator(object):
                 self.x, self.y, self.z,
                 origin=(-self.x//2, -self.y//2, -self.z//2)
             )
-            features = self.features
-            while callable(features):
-                features = features()
-            for feature in features:
-                while callable(feature):
-                    feature = feature()
-                maze.request_feature(*feature)
+
+            chambers = self.chambers
+            while callable(chambers):
+                chambers = chambers()
+            for chamber in chambers:
+                while callable(chamber):
+                    chamber = chamber()
+                maze.request_chamber(*chamber)
+
+            barriers = self.barriers
+            while callable(barriers):
+                barriers = barriers()
+            for barrier in barriers:
+                while callable(barrier):
+                    barrier = barrier()
+                maze.request_barrier(*barrier)
+
             maze.fill()
             return maze
 
@@ -168,4 +179,14 @@ class ImageSaver(object):
 
     def __call__(self, image):
         image.save(self.filename)
+        return self.filename
+
+
+class TextSaver(object):
+    def __init__(self, filename):
+        self.filename = filename
+
+    def __call__(self, text):
+        with open(self.filename, 'w') as f:
+            f.write(text)
         return self.filename

@@ -57,7 +57,11 @@ class ZippedFeatures(object):
     def __init__(self, filename):
         self.filename = filename
 
-    def random_image(self, background_color=(255, 255, 255)):
+    def __call__(self, width, height, background_color=None):
+        return self.random_image(width, height, background_color)
+
+    def random_image(self, width, height, background_color=None):
+        background_color = background_color or (255, 255, 255)
         with zipfile.ZipFile(self.filename) as zf:
             name = random.choice(zf.namelist())
             of = zf.open(name)
@@ -70,6 +74,8 @@ class ZippedFeatures(object):
                 new_image = Image.new('RGB', image.size, background_color)
                 new_image.paste(image, mask=image.split()[3])
                 image = new_image
+            image = image.resize((width, height), Image.BICUBIC)
+
             return image
 
 
@@ -105,14 +111,10 @@ class ImageLineIllustrator(LineIllustratorBase):
     def draw_feature(self, p0, p1, feature):
         if not self.features:
             return
-        fimage = self.features.random_image()
         x0 = (p0[0] + 1) * (self.hall + self.wall)
         y0 = (p0[1] + 1) * (self.hall + self.wall)
         x1 = (p1[0] - 1) * (self.hall + self.wall) + self.wall
         y1 = (p1[1] - 1) * (self.hall + self.wall) + self.wall
 
-        print((x0, y0, x1, y1))
-        fimage = fimage.resize((x1-x0, y1-y0), Image.BICUBIC)
-
-        print((self.image.mode, fimage.mode))
+        fimage = self.features(x1-x0, y1-y0, self.background_color)
         self.image.paste(fimage, (x0, y0))

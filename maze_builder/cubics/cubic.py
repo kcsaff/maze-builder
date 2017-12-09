@@ -89,10 +89,20 @@ class Cubic(object):
                 continue
             if connected:
                 self.topology.force(*self.topology.routes_connecting(rooms))
+            else:
+                self.topology.forget(*self.topology.routes_connecting(rooms))
             feature = Feature(rooms, name)
             self.features.append(feature)
             break
         return self
+
+    def request_chamber(self, width, length=None, height=1, name=None, attempts=20):
+        return self.request_feature(width, length, height, name or 'chamber',
+                                    attempts=attempts, connected=True)
+
+    def request_barrier(self, width, length=None, height=1, name=None, attempts=20):
+        return self.request_feature(width, length, height, name or 'barrier',
+                                    attempts=attempts, connected=False)
 
     def get_room(self, coords, make=True):
         if len(coords) == 2:

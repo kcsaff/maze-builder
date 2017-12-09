@@ -275,6 +275,8 @@ class MeshBuilder(MeshBase):
 
         self.faces = list()
 
+        self.materials = dict()
+
     # Override
 
     def perform_warp(self, warp):
@@ -323,13 +325,16 @@ class MeshBuilder(MeshBase):
     def replace_normal_vertex(self, index, coords):
         raise self._replace_vertex(index, coords, self.normal_vertices)
 
-    def enter_face(self, vertices, texture_vertices=None, normal_vertices=None, material=None):
+    def enter_face(self, vertices,
+                   texture_vertices=None, normal_vertices=None, material=None):
         self.faces.append(Face(
             tuple(self.force_vertex_index(v) for v in vertices),
             tuple(self.force_texture_vertex_index(v) for v in texture_vertices) if texture_vertices else None,
             tuple(self.force_normal_vertex_index(v) for v in normal_vertices) if normal_vertices else None,
-            material or self.attributes.default_material,
+            material.name if material else self.attributes.default_material,
         ))
+        if material and material.name not in self.materials:
+            self.materials[material.name] = material
 
     def get_face(self, index):
         return self.faces[index - self.attributes.index_base]
